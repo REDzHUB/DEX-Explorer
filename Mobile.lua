@@ -483,8 +483,7 @@ local function main()
 			{5,"Frame",{BackgroundColor3=Color3.new(1,1,1),BorderSizePixel=0,Name="Line",Parent={1},Position=UDim2.new(1,-1,0,0),Size=UDim2.new(0,1,1,0),ZIndex=2,}},
 		})
 		dragOutline.Parent = treeFrame
-
-
+		
 		local mouse = Main.Mouse or service.Players.LocalPlayer:GetMouse()
 		local function move()
 			local posX = mouse.X - offX
@@ -568,7 +567,7 @@ local function main()
 		end)
 
 		newEntry.MouseButton1Up:Connect(function()
-
+		  
 		end)
 
 		newEntry.InputBegan:Connect(function(input)
@@ -599,12 +598,13 @@ local function main()
 							releaseEvent:Disconnect()
 							mouseEvent:Disconnect()
 							isRenaming = false
-							Explorer.StartDrag(listOffsetX,listOffsetY)
+							Explorer.StartDrag(listOffsetX, listOffsetY)
 						end
 					end
 				end)
 			end
 		end)
+
 
 		newEntry.MouseButton2Down:Connect(function()
 
@@ -1529,7 +1529,7 @@ local function main()
 
 				return {
 					Headers = {"local isa = game.IsA"},
-					Predicate = "isa(obj,'"..className.."')"
+					Predicate = "isa(obj,'" .. className .. "')"
 				}
 			end,
 			["remotes"] = function(argString)
@@ -1807,7 +1807,7 @@ return search]==]
 			local tostring = tostring
 
 			local lowerQuery = lower(query)
-
+		  
 			local function defaultSearch(root)
 				local expandedpar = false
 				for i = 1,#root do
@@ -4207,23 +4207,23 @@ local function main()
 	ScriptViewer.ViewScript = function(scr)
 		local success, source = pcall(env.decompile or function() end, scr)
 		if not success or not source then source, PreviousScr = "-- DEX - Source failed to decompile", nil else PreviousScr = scr end
-		codeFrame:SetText(source:gsub("\0", "\\0")) -- Fix stupid breaking script viewer
+		codeFrame:SetText(source:gsub("\0", "\\0"))
 		window:Show()
 	end
 
 	ScriptViewer.Init = function()
 		window = Lib.Window.new()
 		window:SetTitle("Script Viewer")
-		window:Resize(500,400)
+		window:Resize(500, 400)
 		ScriptViewer.Window = window
-
+		
 		codeFrame = Lib.CodeFrame.new()
 		codeFrame.Frame.Position = UDim2.new(0,0,0,20)
 		codeFrame.Frame.Size = UDim2.new(1,0,1,-20)
 		codeFrame.Frame.Parent = window.GuiElems.Content
-
+		
 		-- TODO: REMOVE AND MAKE BETTER
-		local copy = Instance.new("TextButton",window.GuiElems.Content)
+		local copy = Instance.new("TextButton", window.GuiElems.Content)
 		copy.BackgroundTransparency = 1
 		copy.Size = UDim2.new(0.5,0,0,20)
 		copy.Text = "Copy to Clipboard"
@@ -4257,7 +4257,7 @@ local function main()
 		dumpbtn.Size = UDim2.new(0.3,0,0,20)
 		dumpbtn.Text = "Dump Functions"
 		dumpbtn.TextColor3 = Color3.new(1,1,1)
-
+		
 		dumpbtn.MouseButton1Click:Connect(function()
 			if PreviousScr ~= nil then
 				pcall(function()
@@ -5211,34 +5211,26 @@ local function main()
       
       obj.Position = UDim2.new(-col - (pad * (col + 1) + border) / IconSize, 0, -row - (pad * (row + 1) + border) / IconSize, 0)
 			obj.Size = UDim2.new(MapSize.X / IconSize, 0, MapSize.Y / IconSize, 0)
-  		-- obj.Position = ((math.random(1, 2) == 2) and UDim2.new(-0.1875, 0, -0.1875, 0)) or obj.Position
-  		--[==[
-  		obj.Size = UDim2.new(MapSize.X / IconSize, 0, MapSize.Y / IconSize, 0)
-      obj.Active = false
-      obj.BackgroundTransparency = 1
-      obj.Size = UDim2.new(MapSize.X / IconSize, 0, MapSize.Y / IconSize, 0)
-      obj.Position = UDim2.new(-col - (pad * (col + 1) + border) / IconSize, 0, -row - (pad * (row + 1) + border) / IconSize, 0)
-      ]==]
 		end
 		
-		funcs.DisplayExplorerIcons = function(self, Frame, index)
-		  Frame.ClipsDescendants = true
-		  Frame.BackgroundTransparency = 1
-		  
-		  local obj = Instance.new("ImageLabel", Frame)
-		  obj.BackgroundTransparency = 1
-		  obj.Image = ("http://www.roblox.com/asset/?id=" .. _MapId)
-		  self:GetExplorerIcon(obj, index)
+    funcs.DisplayExplorerIcons = function(self, Frame, index)
+      if Frame:FindFirstChild("IconMap") then
+        self:GetExplorerIcon(Frame.IconMap, index)
+      else
+        Frame.ClipsDescendants = true
+        
+        local obj = Instance.new("ImageLabel", Frame)
+        obj.BackgroundTransparency = 1
+        obj.Image = ("http://www.roblox.com/asset/?id=" .. _MapId)
+        obj.Name = "IconMap"
+        self:GetExplorerIcon(obj, index)
+      end
 		end
 
 		funcs.SetDict = function(self,dict)
 			self.IndexDict = dict
 		end
 		
-		funcs.SetIcons = function(self,icons)
-      self.IndexIcons = icons
-		end
-
 		local mt = {}
 		mt.__index = funcs
 
@@ -5250,8 +5242,7 @@ local function main()
 				IconSizeX = iconSizeX,
 				IconSizeY = iconSizeY,
 				NumX = mapSizeX/iconSizeX,
-				IndexDict = {},
-				IndexIcons = {}
+				IndexDict = {}
 			}, mt)
 			return obj
 		end
@@ -5261,8 +5252,7 @@ local function main()
 				MapId = mapId,
 				IconSizeX = iconSizeX,
 				IconSizeY = iconSizeY,
-				IndexDict = {},
-				IndexIcons = {}
+				IndexDict = {}
 			},mt)
 			return obj
 		end
@@ -5451,9 +5441,9 @@ local function main()
 				local function doTick()
 					local scrollSize = self.VisibleSpace - 1
 					if ScrollDirection == 0 and mouse[dir] < scrollThumb.AbsolutePosition[dir] then
-						self:ScrollTo(self.Index - scrollSize)
+						self:ScrollTo(self.Index - (self.Increment * 5))
 					elseif ScrollDirection == 1 and mouse[dir] >= scrollThumb.AbsolutePosition[dir] + scrollThumb.AbsoluteSize[dir] then
-						self:ScrollTo(self.Index + scrollSize)
+						self:ScrollTo(self.Index + (self.Increment * 5))
 					end
 				end
 				
@@ -5487,7 +5477,7 @@ local function main()
 			local button2 = self.GuiElems.Button2
 
 			self.Index = math.clamp(self.Index, 0, math.max(0, total - visible))
-
+			
 			if self.LastTotalSpace ~= self.TotalSpace then
 				self.LastTotalSpace = self.TotalSpace
 				self:UpdateMarkers()
@@ -5539,7 +5529,7 @@ local function main()
 		funcs.AddMarker = function(self,ind,color)
 			self.Markers[ind] = color or Color3.new(0,0,0)
 		end
-		funcs.ScrollTo = function(self,ind,nocallback)
+		funcs.ScrollTo = function(self, ind, nocallback)
 			self.Index = ind
 			self:Update()
 			if not nocallback then
@@ -5624,11 +5614,11 @@ local function main()
 		local funcs = {}
 		local static = {MinWidth = 200, FreeWidth = 200}
 		local mouse = plr:GetMouse()
-		local sidesGui,alignIndicator
+		local sidesGui, alignIndicator
 		local visibleWindows = {}
 		local leftSide = {Width = 300, Windows = {}, ResizeCons = {}, Hidden = true}
 		local rightSide = {Width = 300, Windows = {}, ResizeCons = {}, Hidden = true}
-
+		
 		local displayOrderStart
 		local sideDisplayOrder
 		local sideTweenInfo = TweenInfo.new(0.3,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
@@ -5640,7 +5630,7 @@ local function main()
 			MainColor2 = Color3.fromRGB(45,45,45),
 			Button = Color3.fromRGB(60,60,60)
 		}
-
+		
 		local function stopTweens()
 			for i = 1,#tweens do
 				tweens[i]:Cancel()
@@ -5786,11 +5776,11 @@ local function main()
 				{21,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.27450981736183,0.27450981736183,0.27450981736183),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="NorthWest",Parent={14},Size=UDim2.new(0,5,0,5),Text="",TextColor3=Color3.new(0,0,0),TextSize=14,}},
 				{22,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.27450981736183,0.27450981736183,0.27450981736183),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="SouthWest",Parent={14},Position=UDim2.new(0,0,1,-5),Size=UDim2.new(0,5,0,5),Text="",TextColor3=Color3.new(0,0,0),TextSize=14,}},
 			})
-
+			
 			local guiMain = gui.Main
 			local guiTopBar = guiMain.TopBar
 			local guiResizeControls = guiMain.ResizeControls
-
+			
 			self.GuiElems.Main = guiMain
 			self.GuiElems.TopBar = guiMain.TopBar
 			self.GuiElems.Content = guiMain.Content
@@ -6402,7 +6392,7 @@ local function main()
 				end
 				return
 			end
-
+			
 			window.Closed = false
 			window.LastClose = tick()
 			window.GuiElems.Title.TextTransparency = 0
@@ -8627,7 +8617,7 @@ local function main()
 				OnCancel = Lib.Signal.new(),
 				OnMoreColors = Lib.Signal.new(),
 				PrevColor = Color3.new(0,0,0)
-			},mt)
+			}, mt)
 			createGui(obj)
 			return obj
 		end
@@ -10245,7 +10235,7 @@ local function main()
 			local pos = table.find(con.Signal.Connections,con)
 			if pos then table.remove(con.Signal.Connections,pos) end
 		end
-
+		
 		funcs.Trigger = function(self, item, button)
 			if table.find(self.AllowedButtons, button) then
 				if self.LastButton ~= button or self.LastItem ~= item or self.Combo == self.MaxCombo or tick() - self.ClickId > self.ComboTime then
@@ -10254,30 +10244,30 @@ local function main()
 					self.LastItem = item
 				end
 				
-				self.Combo = self.Combo + 1
-				self.ClickId = tick()
-				
-				task.spawn(function()
-				  if self.InputDown then
-				    self.InputDown = false
-				  else
-  				  self.InputDown = tick()
-  				  
-  				  local Connection = item.MouseButton1Up:Connect(function()
+        self.Combo = self.Combo + 1
+        self.ClickId = tick()
+        
+        task.spawn(function()
+          if self.InputDown then
+            self.InputDown = false
+          else
+            self.InputDown = tick()
+            
+            local Connection = item.MouseButton1Up:Connect(function()
   				    self.InputDown = false
   				  end)
-  				  
-  				  while self.InputDown do
-  				    if (tick() - self.InputDown) >= 0.5 then
-  				      self.InputDown = false
-  				      self["OnRelease"]:Fire(item,self.Combo,2)
-  				      break
-  				    end;task.wait()
-  				  end
-  				  
-  				  Connection:Disconnect()
-  				end
-				end)
+            
+            while self.InputDown do
+              if (tick() - self.InputDown) >= 0.5 then
+                self.InputDown = false
+                self["OnRelease"]:Fire(item,self.Combo,2)
+                break
+              end;task.wait()
+            end
+            
+            Connection:Disconnect()
+          end
+        end)
 				
 				local release
 				release = service.UserInputService.InputEnded:Connect(function(input)
