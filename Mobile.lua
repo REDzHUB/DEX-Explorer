@@ -53,6 +53,12 @@ local RETURN_ELAPSED_TIME = false]]
       ), "Advanced-Decompiler-V3"
     )
     
+    if not func then
+      return nil
+    end
+    
+    func()
+    
     local _ENV = (getgenv or getrenv or getfenv)()
     Decompile = _ENV.decompile
   end
