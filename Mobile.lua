@@ -23,6 +23,41 @@ Explorer = function()
 
 -- Common Locals
 
+local Decompile do
+  local Success, Decompile_Source = pcall(function()
+    return game:HttpGet("https://raw.githubusercontent.com/w-a-e/Advanced-Decompiler-V3/main/init.lua", true)
+  end)
+  
+  if Success then
+    local CONSTANTS = [[
+local ENABLED_REMARKS = {
+  NATIVE_REMARK = true,
+  INLINE_REMARK = true
+}
+
+local DECOMPILER_TIMEOUT = 10
+
+local READER_FLOAT_PRECISION = 7 -- up to 99
+local SHOW_INSTRUCTION_LINES = false
+local SHOW_REFERENCES = true
+local SHOW_OPERATION_NAMES = false
+local SHOW_MISC_OPERATIONS = false
+local LIST_USED_GLOBALS = true
+local RETURN_ELAPSED_TIME = false]]
+
+    local func = loadstring(
+      string.gsub(
+        string.gsub(
+          Decompile_Source, "return %(x %% 2^32%) // %(2^disp%)", "return math.floor((x %% 2^32) / (2^disp))", 1
+        ), ";;CONSTANTS HERE;;", CONSTANTS
+      ), "Advanced-Decompiler-V3"
+    )
+    
+    local _ENV = (getgenv or getrenv or getfenv)()
+    Decompile = _ENV.decompile
+  end
+end
+
 local Main,Lib,Apps,Settings -- Main Containers
 local Explorer, Properties, ScriptViewer, Notebook -- Major Apps
 local API,RMD,env,service,plr,create,createSimple -- Main Locals
@@ -699,13 +734,13 @@ local function main()
 						entry.Indent.BackgroundTransparency = 1
 					end
 				end
-
+				
 				if node == renamingNode then
 					renameNodeVisible = true
 					renameBox.Position = UDim2.new(0,depth+25-scrollH.Index,0,entry.Position.Y.Offset+2)
 					renameBox.Visible = true
 				end
-
+				
 				if #node > 0 and expanded[node] ~= 0 then
 					if Lib.CheckMouseInGui(entry.Indent.Expand) then
 						Explorer.MiscIcons:DisplayByKey(entry.Indent.Expand.Icon, expanded[node] and "Collapse_Over" or "Expand_Over")
@@ -720,11 +755,11 @@ local function main()
 				entry.Visible = false
 			end
 		end
-
+		
 		if not renameNodeVisible then
 			renameBox.Visible = false
 		end
-
+		
 		for i = maxNodes+1, #listEntries do
 			Explorer.ClickSystem:Remove(listEntries[i])
 			listEntries[i]:Destroy()
@@ -1370,19 +1405,16 @@ local function main()
 		end})
 		
 		context:Register("SAVE_BYTECODE",{Name = "Save ScriptBytecode in Files", IconMap = Explorer.MiscIcons, Icon = "Save", OnClick = function()
-			local scr = selection.List[1] and selection.List[1].Obj
-			if scr then
-        local success, bytecode = pcall(getscriptbytecode, scr)
-        if success and type(bytecode) == "string" then
-          local Name = ("[%i]:Script: %s"):format(game.PlaceId, scr.Name)
-          local OName = Name
-          while isfile(OName .. ".txt") do
-            OName = Name .. math.random(1, 10000)
+      for _,v in next, selection.List do
+        if v.Obj:IsA("LuaSourceContainer") then
+          local success, bytecode = pcall(getscriptbytecode, scr)
+          if success and type(bytecode) == "string" then
+            local Name = ("%i.Script.%s.txt"):format(game.PlaceId, scr.Name)
+            writefile(Name, bytecode)
+            task.wait(0.2)
           end
-          
-          writefile(OName:format(game.PlaceId, scr.Name), bytecode)
         end
-      end
+  		end
 		end})
 		
 		context:Register("SELECT_CHARACTER",{Name = "Select Character", IconMap = Explorer.ClassIcons, Icon = 9, OnClick = function()
@@ -2002,11 +2034,22 @@ return search]==]
 	end
 
 	Explorer.InitSearch = function()
-		local searchBox = Explorer.GuiElems.ToolBar.SearchFrame.SearchBox
+    local TweenService = game:GetService("TweenService")
+    local SearchFrame = Explorer.GuiElems.ToolBar.SearchFrame
+		local searchBox = SearchFrame.SearchBox
 		Explorer.GuiElems.SearchBar = searchBox
-
+		
+		local TweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quint)
+		local Tweens = {
+		  Start = TweenService:Create(SearchFrame.UIStroke, TweenInfo, { Color = Color3.fromRGB(0, 120, 215) }),
+		  End = TweenService:Create(SearchFrame.UIStroke, TweenInfo, { Color = Color3.fromRGB(42, 42, 42) })
+		}
+		
+		searchBox.FocusLost:Connect(function() Tweens.End:Play() end)
+		searchBox.Focused:Connect(function() Tweens.Start:Play() end)
+		
 		Lib.ViewportTextBox.convert(searchBox)
-
+		
 		searchBox.FocusLost:Connect(function()
 			Explorer.DoSearch(searchBox.Text)
 		end)
@@ -2019,7 +2062,7 @@ return search]==]
 			{3,"TextLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Font=3,Name="EntryName",Parent={2},Position=UDim2.new(0,26,0,0),Size=UDim2.new(1,-26,1,0),Text="Workspace",TextColor3=Color3.new(0.86274516582489,0.86274516582489,0.86274516582489),TextSize=14,TextXAlignment=0,}},
 			{4,"TextButton",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,ClipsDescendants=true,Font=3,Name="Expand",Parent={2},Position=UDim2.new(0,-20,0,0),Size=UDim2.new(0,20,0,20),Text="",TextSize=14,}},
 			{5,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxassetid://5642383285",ImageRectOffset=Vector2.new(144,16),ImageRectSize=Vector2.new(16,16),Name="Icon",Parent={4},Position=UDim2.new(0,2,0,2),ScaleType=4,Size=UDim2.new(0,16,0,16),}},
-			{6,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxasset://textures/ClassImages.png",ImageRectOffset=Vector2.new(304,0),ImageRectSize=Vector2.new(16,16),Name="Icon",Parent={2},Position=UDim2.new(0,4,0,2),ScaleType=4,Size=UDim2.new(0,16,0,16),}},
+			{6,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,ImageRectOffset=Vector2.new(304,0),ImageRectSize=Vector2.new(16,16),Name="Icon",Parent={2},Position=UDim2.new(0,4,0,2),ScaleType=4,Size=UDim2.new(0,16,0,16),}},
 		})
 
 		local sys = Lib.ClickSystem.new()
@@ -2269,12 +2312,13 @@ return search]==]
 			{3,"Frame",{BackgroundColor3=Color3.new(0.14901961386204,0.14901961386204,0.14901961386204),BorderColor3=Color3.new(0.1176470592618,0.1176470592618,0.1176470592618),BorderSizePixel=0,Name="SearchFrame",Parent={2},Position=UDim2.new(0,3,0,1),Size=UDim2.new(1,-6,0,18),}},
 			{4,"TextBox",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,ClearTextOnFocus=false,Font=3,Name="SearchBox",Parent={3},PlaceholderColor3=Color3.new(0.39215689897537,0.39215689897537,0.39215689897537),PlaceholderText="Search workspace",Position=UDim2.new(0,4,0,0),Size=UDim2.new(1,-24,0,18),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,}},
 			{5,"UICorner",{CornerRadius=UDim.new(0,2),Parent={3},}},
-			{6,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.12549020349979,0.12549020349979,0.12549020349979),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Reset",Parent={3},Position=UDim2.new(1,-17,0,1),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,}},
-			{7,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxassetid://5034718129",ImageColor3=Color3.new(0.39215686917305,0.39215686917305,0.39215686917305),Parent={6},Size=UDim2.new(0,16,0,16),}},
-			{8,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.12549020349979,0.12549020349979,0.12549020349979),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Refresh",Parent={2},Position=UDim2.new(1,-20,0,1),Size=UDim2.new(0,18,0,18),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,Visible=false,}},
-			{9,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxassetid://5642310344",Parent={8},Position=UDim2.new(0,3,0,3),Size=UDim2.new(0,12,0,12),}},
-			{10,"Frame",{BackgroundColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),BorderSizePixel=0,Name="ScrollCorner",Parent={1},Position=UDim2.new(1,-16,1,-16),Size=UDim2.new(0,16,0,16),Visible=false,}},
-			{11,"Frame",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,ClipsDescendants=true,Name="List",Parent={1},Position=UDim2.new(0,0,0,23),Size=UDim2.new(1,0,1,-23),}},
+			{6,"UIStroke",{Thickness=1.4,Parent={3},Color=Color3.fromRGB(42,42,42)}},
+			{7,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.12549020349979,0.12549020349979,0.12549020349979),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Reset",Parent={3},Position=UDim2.new(1,-17,0,1),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,}},
+			{8,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxassetid://5034718129",ImageColor3=Color3.new(0.39215686917305,0.39215686917305,0.39215686917305),Parent={7},Size=UDim2.new(0,16,0,16),}},
+			{9,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.12549020349979,0.12549020349979,0.12549020349979),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Refresh",Parent={2},Position=UDim2.new(1,-20,0,1),Size=UDim2.new(0,18,0,18),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,Visible=false,}},
+			{10,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxassetid://5642310344",Parent={9},Position=UDim2.new(0,3,0,3),Size=UDim2.new(0,12,0,12),}},
+			{11,"Frame",{BackgroundColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),BorderSizePixel=0,Name="ScrollCorner",Parent={1},Position=UDim2.new(1,-16,1,-16),Size=UDim2.new(0,16,0,16),Visible=false,}},
+			{12,"Frame",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,ClipsDescendants=true,Name="List",Parent={1},Position=UDim2.new(0,0,0,23),Size=UDim2.new(1,0,1,-23),}}
 		})
 		
 		toolBar = explorerItems.ToolBar
@@ -2339,11 +2383,10 @@ return search]==]
 		end)
 		window.OnDeactivate:Connect(function() Explorer.Active = false end)
 		window.OnMinimize:Connect(function() Explorer.Active = false end)
-
+		
 		-- Settings
 		autoUpdateSearch = Settings.Explorer.AutoUpdateSearch
-
-
+		
 		-- Fill in nodes
 		nodes[game] = {Obj = game}
 		expanded[nodes[game]] = true
@@ -2352,7 +2395,7 @@ return search]==]
 		if env.getnilinstances then
 			nodes[nilNode.Obj] = nilNode
 		end
-
+		
 		Explorer.SetupConnections()
 
 		local insts = getDescendants(game)
@@ -2473,9 +2516,9 @@ local function main()
 		["Ray"] = true,
 		["NumberRange"] = true,
 		["Faces"] = true,
-		["Axes"] = true,
+		["Axes"] = true
 	}
-
+	
 	Properties.ExpandableProps = {
 		["Sound.SoundId"] = true
 	}
@@ -2580,7 +2623,7 @@ local function main()
 			if xScale and xOffset and yScale and yOffset and #vals >= 4 then return UDim2.new(xScale,xOffset,yScale,yOffset) end
 		elseif typeName == "CFrame" then
 			local vals = str:split(",")
-			local s,result = pcall(CFrame.new,unpack(vals))
+			local s,result = pcall(CFrame.new, unpack(vals))
 			if s and #vals >= 12 then return result end
 		elseif typeName == "Rect" then
 			local vals = str:split(",")
@@ -2611,9 +2654,9 @@ local function main()
 		if typeName == "Color3" then
 			return Lib.ColorToBytes(val)
 		elseif typeName == "NumberRange" then
-			return val.Min..", "..val.Max
-		end
-
+      return val.Min..", "..val.Max
+    end
+    
 		return tostring(val)
 	end
 
@@ -2986,7 +3029,7 @@ local function main()
 		if prop.Name == "SoundId" and prop.Class == "Sound" then
 			result[1] = Properties.SoundPreviewProp
 		end
-
+		
 		return result
 	end
 
@@ -3466,12 +3509,12 @@ local function main()
 			sorted[#sorted+1] = enum
 		end
 		table.sort(sorted,function(a,b) return a.Name < b.Name end)
-
+		
 		context:Clear()
 
 		local function onClick(name)
 			if prop ~= inputProp then return end
-
+			
 			local enumItem = enum[name]
 			inputProp = nil
 			Properties.SetProp(prop,enumItem)
@@ -3481,7 +3524,7 @@ local function main()
 			local enumItem = sorted[i]
 			context:Add({Name = enumItem.Name, OnClick = onClick})
 		end
-
+		
 		context.Width = valueFrame.AbsoluteSize.X
 		context:Show(valueFrame.AbsolutePosition.X, valueFrame.AbsolutePosition.Y + 22)
 	end
@@ -3556,7 +3599,7 @@ local function main()
 		end
 		editor:Show()
 	end
-
+	
 	Properties.DisplayNumberSequenceEditor = function(prop,seq)
 		local editor = Properties.NumberSequenceEditor
 		if not editor then
@@ -4157,10 +4200,22 @@ local function main()
 	end
 
 	Properties.InitSearch = function()
-		local searchBox = Properties.GuiElems.ToolBar.SearchFrame.SearchBox
-
+    local TweenService = game:GetService("TweenService")
+    local SearchFrame = Properties.GuiElems.ToolBar.SearchFrame
+		local searchBox = SearchFrame.SearchBox
+		
+		local TweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quint)
+		
+		local Tweens = {
+		  Start = TweenService:Create(SearchFrame.UIStroke, TweenInfo, { Color = Color3.fromRGB(0, 120, 215) }),
+		  End = TweenService:Create(SearchFrame.UIStroke, TweenInfo, { Color = Color3.fromRGB(42, 42, 42) })
+		}
+		
 		Lib.ViewportTextBox.convert(searchBox)
-
+		
+		searchBox.FocusLost:Connect(function() Tweens.End:Play() end)
+		searchBox.Focused:Connect(function() Tweens.Start:Play() end)
+		
 		searchBox:GetPropertyChangedSignal("Text"):Connect(function()
 			Properties.SearchText = searchBox.Text
 			Properties.Update()
@@ -4217,12 +4272,13 @@ local function main()
 			{3,"Frame",{BackgroundColor3=Color3.new(0.14901961386204,0.14901961386204,0.14901961386204),BorderColor3=Color3.new(0.1176470592618,0.1176470592618,0.1176470592618),BorderSizePixel=0,Name="SearchFrame",Parent={2},Position=UDim2.new(0,3,0,1),Size=UDim2.new(1,-6,0,18),}},
 			{4,"TextBox",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,ClearTextOnFocus=false,Font=3,Name="SearchBox",Parent={3},PlaceholderColor3=Color3.new(0.39215689897537,0.39215689897537,0.39215689897537),PlaceholderText="Search properties",Position=UDim2.new(0,4,0,0),Size=UDim2.new(1,-24,0,18),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,}},
 			{5,"UICorner",{CornerRadius=UDim.new(0,2),Parent={3},}},
-			{6,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.12549020349979,0.12549020349979,0.12549020349979),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Reset",Parent={3},Position=UDim2.new(1,-17,0,1),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,}},
-			{7,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxassetid://5034718129",ImageColor3=Color3.new(0.39215686917305,0.39215686917305,0.39215686917305),Parent={6},Size=UDim2.new(0,16,0,16),}},
-			{8,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.12549020349979,0.12549020349979,0.12549020349979),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Refresh",Parent={2},Position=UDim2.new(1,-20,0,1),Size=UDim2.new(0,18,0,18),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,Visible=false,}},
-			{9,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxassetid://5642310344",Parent={8},Position=UDim2.new(0,3,0,3),Size=UDim2.new(0,12,0,12),}},
-			{10,"Frame",{BackgroundColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),BorderSizePixel=0,Name="ScrollCorner",Parent={1},Position=UDim2.new(1,-16,1,-16),Size=UDim2.new(0,16,0,16),Visible=false,}},
-			{11,"Frame",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,ClipsDescendants=true,Name="List",Parent={1},Position=UDim2.new(0,0,0,23),Size=UDim2.new(1,0,1,-23),}},
+			{6,"UIStroke",{Thickness=1.4,Parent={3},Color=Color3.fromRGB(42,42,42)}},
+			{7,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.12549020349979,0.12549020349979,0.12549020349979),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Reset",Parent={3},Position=UDim2.new(1,-17,0,1),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,}},
+			{8,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxassetid://5034718129",ImageColor3=Color3.new(0.39215686917305,0.39215686917305,0.39215686917305),Parent={7},Size=UDim2.new(0,16,0,16),}},
+			{9,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.12549020349979,0.12549020349979,0.12549020349979),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Refresh",Parent={2},Position=UDim2.new(1,-20,0,1),Size=UDim2.new(0,18,0,18),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,Visible=false,}},
+			{10,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxassetid://5642310344",Parent={9},Position=UDim2.new(0,3,0,3),Size=UDim2.new(0,12,0,12),}},
+			{11,"Frame",{BackgroundColor3=Color3.new(0.15686275064945,0.15686275064945,0.15686275064945),BorderSizePixel=0,Name="ScrollCorner",Parent={1},Position=UDim2.new(1,-16,1,-16),Size=UDim2.new(0,16,0,16),Visible=false,}},
+			{12,"Frame",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,ClipsDescendants=true,Name="List",Parent={1},Position=UDim2.new(0,0,0,23),Size=UDim2.new(1,0,1,-23),}},
 		})
 
 		-- Vars
@@ -4832,7 +4888,6 @@ local function main()
 			end
 		end)
 		
-
 		control.Disable = function()
 			disabled = true
 			holding = false
@@ -4843,11 +4898,11 @@ local function main()
 				button.BackgroundColor3 = control.StartColor
 			end
 		end
-
+		
 		control.Enable = function()
 			disabled = false
 		end
-
+		
 		return control
 	end
 
@@ -5521,7 +5576,7 @@ local function main()
       local function handleButtonPress(button, scrollDirection)
         if self:CanScroll(scrollDirection) then
           button.BackgroundTransparency = 0.5
-          self:Scroll(scrollDirection)
+          self:ScrollToDirection(scrollDirection)
           self.Scrolled:Fire()
           local buttonTick = tick()
           local releaseEvent
@@ -5533,20 +5588,18 @@ local function main()
             end
           end)
           while buttonPress do
-            if tick() - buttonTick >= 0.3 and self:CanScroll(scrollDirection) then
-              self:Scroll(scrollDirection)
+            if tick() - buttonTick >= 0.25 and self:CanScroll(scrollDirection) then
+              self:ScrollToDirection(scrollDirection)
               self.Scrolled:Fire()
             end
-            wait()
+            task.wait()
           end
         end
       end
       
-      button1.InputBegan:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-          buttonPress = true
-          handleButtonPress(button1, "Up")
-        end
+      button1.MouseButton1Down:Connect(function(input)
+        buttonPress = true
+        handleButtonPress(button1, "Up")
       end)
       
       button1.InputEnded:Connect(function(input)
@@ -5555,11 +5608,9 @@ local function main()
         end
       end)
       
-      button2.InputBegan:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-          buttonPress = true
-          handleButtonPress(button2, "Down")
-        end
+      button2.MouseButton1Down:Connect(function(input)
+        buttonPress = true
+        handleButtonPress(button2, "Down")
       end)
       
       button2.InputEnded:Connect(function(input)
@@ -5597,7 +5648,6 @@ local function main()
                 lastThumbPos = pos
                 self:ScrollTo(math.floor(0.5 + pos / thumbFrameSize * (self.TotalSpace - self.VisibleSpace)))
               end
-              wait()
             end
           end)
         end
@@ -5638,7 +5688,7 @@ local function main()
             if tick() - thumbFrameTick >= 0.3 and checkMouseInGui(scrollThumbFrame) then
               doTick()
             end
-            wait()
+            task.wait()
           end
         end
       end)
@@ -5756,7 +5806,14 @@ local function main()
 			self.Index = math.floor(perc*(self.TotalSpace-self.VisibleSpace))
 			self:Update()
 		end
-
+		funcs.ScrollToDirection = function(self, Direaction)
+      if Direaction == "Up" then
+        self:ScrollUp()
+      elseif Direaction == "Down" then
+        self:ScrollDown()
+      end
+    end
+    
 		funcs.Texture = function(self,data)
 			self.ThumbColor = data.ThumbColor or Color3.new(0,0,0)
 			self.ThumbSelectColor = data.ThumbSelectColor or Color3.new(0,0,0)
@@ -6114,7 +6171,7 @@ local function main()
 			for i = 1,#descs do
 				focusInput(self,descs[i])
 			end
-
+			
 			self.MinimizeAnim = Lib.ButtonAnim(guiTopBar.Minimize)
 			self.CloseAnim = Lib.ButtonAnim(guiTopBar.Close)
 
@@ -9083,7 +9140,7 @@ local function main()
                 func(startNum)
                 startTime = tick()
               end
-              wait(0.1)
+              task.wait(0.1)
             end
           end
         end)
@@ -9120,7 +9177,7 @@ local function main()
                 func(startNum)
                 startTime = tick()
               end
-              wait(0.1)
+              task.wait(0.1)
             end
           end
         end)
