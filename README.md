@@ -19,7 +19,7 @@ more in soon:
   pick color by clicking on an object [ Color Picker ]
   Search Bar Filters:
     Explorer:
-      isa:<BasePart>
+      isa:<Class> - Exemple: ( isa:BasePart )
       class:<ClassName>
       parent:<Name>
       only:players, only:scripts, only:remotes
