@@ -1,12 +1,12 @@
 --[[
   github: https://github.com/LorekeeperZinnia/Dex
   
-	New Dex
-	Final Version
-	Developed by Moon
-	Modified for Infinite Yield
-	
-	Dex is a debugging suite designed to help the user debug games and find any potential vulnerabilities.
+  New Dex
+  Final Version
+  Developed by Moon
+  Modified for Infinite Yield
+  
+  Dex is a debugging suite designed to help the user debug games and find any potential vulnerabilities.
 ]]
 
 local cloneref = cloneref or (function(...) return ... end)
@@ -3629,7 +3629,7 @@ local function main()
 		local editor = Properties.ColorEditor
 		if not editor then
 			editor = Lib.ColorPicker.new()
-
+			
 			editor.OnSelect:Connect(function(col)
 				if not editor.CurrentProp then return end
 				local typeName = editor.CurrentProp.ValueType.Name
@@ -3640,7 +3640,7 @@ local function main()
 				if editor.CurrentProp == inputProp then inputProp = nil end
 				Properties.SetProp(editor.CurrentProp,colVal)
 			end)
-
+			
 			Properties.ColorEditor = editor
 		end
 
@@ -6061,10 +6061,10 @@ local function main()
 		local createGui = function(self)
 			local gui = create({
 				{1,"ScreenGui",{Name="Window",}},
-				{2,"Frame",{Draggable=true,Active=true,BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,BorderSizePixel=0,Name="Main",Parent={1},Position=UDim2.new(0.40000000596046,0,0.40000000596046,0),Size=UDim2.new(0,300,0,300),}},
+				{2,"Frame",{Active=true,BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,BorderSizePixel=0,Name="Main",Parent={1},Position=UDim2.new(0.40000000596046,0,0.40000000596046,0),Size=UDim2.new(0,300,0,300),}},
 				{3,"Frame",{BackgroundColor3=Color3.new(0.17647059261799,0.17647059261799,0.17647059261799),BorderSizePixel=0,Name="Content",Parent={2},Position=UDim2.new(0,0,0,20),Size=UDim2.new(1,0,1,-20),ClipsDescendants=true}},
 				{4,"Frame",{BackgroundColor3=Color3.fromRGB(33,33,33),BorderSizePixel=0,Name="Line",Parent={3},Size=UDim2.new(1,0,0,1),}},
-				{5,"Frame",{BackgroundColor3=Color3.new(0.20392157137394,0.20392157137394,0.20392157137394),BorderSizePixel=0,Name="TopBar",Parent={2},Size=UDim2.new(1,0,0,20),}},
+				{5,"TextButton",{Text="",AutoButtonColor=false,BackgroundColor3=Color3.new(0.20392157137394,0.20392157137394,0.20392157137394),BorderSizePixel=0,Name="TopBar",Parent={2},Size=UDim2.new(1,0,0,20),}},
 				{6,"TextLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Font=3,Name="Title",Parent={5},Position=UDim2.new(0,5,0,0),Size=UDim2.new(1,-10,0,20),Text="Window",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,}},
 				{7,"TextButton",{AutoButtonColor=false,BackgroundColor3=Color3.new(0.12549020349979,0.12549020349979,0.12549020349979),BackgroundTransparency=1,BorderSizePixel=0,Font=3,Name="Close",Parent={5},Position=UDim2.new(1,-18,0,2),Size=UDim2.new(0,16,0,16),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,}},
 				{8,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,Image="rbxassetid://5054663650",Parent={7},Position=UDim2.new(0,3,0,3),Size=UDim2.new(0,10,0,10),}},
@@ -6098,6 +6098,10 @@ local function main()
 			self.GuiElems.Minimize = guiTopBar.Minimize
 			self.GuiElems.ResizeControls = guiResizeControls
 			self.ContentPane = guiMain.Content
+      
+      local ButtonDown = false
+      guiTopBar.MouseButton1Down:Connect(function() ButtonDown = true end)
+      guiTopBar.MouseButton1Up:Connect(function() ButtonDown = false end)
 			
       guiTopBar.InputBegan:Connect(function(input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -6128,7 +6132,7 @@ local function main()
 						end)
 						
 						mouseEvent = service.UserInputService.InputChanged:Connect(function(input)
-							if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and self.Draggable and not self.Closed then
+							if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and self.Draggable and not self.Closed and ButtonDown then
 								if self.Aligned then
 									if leftSide.Resizing or rightSide.Resizing then return end
 									local posX, posY = input.Position.X - offX, input.Position.Y - offY
@@ -8843,7 +8847,7 @@ local function main()
 		local function createGui(self)
 			local gui = create({
 				{1,"ScreenGui",{Name="BrickColor",}},
-				{2,"Frame",{Draggable=true,Active=true,BackgroundColor3=Color3.new(0.17647059261799,0.17647059261799,0.17647059261799),BorderColor3=Color3.new(0.1294117718935,0.1294117718935,0.1294117718935),Parent={1},Position=UDim2.new(0.40000000596046,0,0.40000000596046,0),Size=UDim2.new(0,337,0,380),}},
+				{2,"Frame",{Active=true,BackgroundColor3=Color3.new(0.17647059261799,0.17647059261799,0.17647059261799),BorderColor3=Color3.new(0.1294117718935,0.1294117718935,0.1294117718935),Parent={1},Position=UDim2.new(0.40000000596046,0,0.40000000596046,0),Size=UDim2.new(0,337,0,380),}},
 				{3,"TextButton",{BackgroundColor3=Color3.new(0.2352941185236,0.2352941185236,0.2352941185236),BorderColor3=Color3.new(0.21568627655506,0.21568627655506,0.21568627655506),BorderSizePixel=0,Font=3,Name="MoreColors",Parent={2},Position=UDim2.new(0,5,1,-30),Size=UDim2.new(1,-10,0,25),Text="More Colors",TextColor3=Color3.new(1,1,1),TextSize=14,}},
 				{4,"ImageLabel",{BackgroundColor3=Color3.new(1,1,1),BackgroundTransparency=1,BorderSizePixel=0,Image="rbxassetid://1281023007",ImageColor3=Color3.new(0.33333334326744,0.33333334326744,0.49803924560547),Name="Hex",Parent={2},Size=UDim2.new(0,35,0,35),Visible=false,}},
 			})
@@ -9109,80 +9113,85 @@ local function main()
 
 			local basicColors = {Color3.new(0,0,0),Color3.new(0.66666668653488,0,0),Color3.new(0,0.33333334326744,0),Color3.new(0.66666668653488,0.33333334326744,0),Color3.new(0,0.66666668653488,0),Color3.new(0.66666668653488,0.66666668653488,0),Color3.new(0,1,0),Color3.new(0.66666668653488,1,0),Color3.new(0,0,0.49803924560547),Color3.new(0.66666668653488,0,0.49803924560547),Color3.new(0,0.33333334326744,0.49803924560547),Color3.new(0.66666668653488,0.33333334326744,0.49803924560547),Color3.new(0,0.66666668653488,0.49803924560547),Color3.new(0.66666668653488,0.66666668653488,0.49803924560547),Color3.new(0,1,0.49803924560547),Color3.new(0.66666668653488,1,0.49803924560547),Color3.new(0,0,1),Color3.new(0.66666668653488,0,1),Color3.new(0,0.33333334326744,1),Color3.new(0.66666668653488,0.33333334326744,1),Color3.new(0,0.66666668653488,1),Color3.new(0.66666668653488,0.66666668653488,1),Color3.new(0,1,1),Color3.new(0.66666668653488,1,1),Color3.new(0.33333334326744,0,0),Color3.new(1,0,0),Color3.new(0.33333334326744,0.33333334326744,0),Color3.new(1,0.33333334326744,0),Color3.new(0.33333334326744,0.66666668653488,0),Color3.new(1,0.66666668653488,0),Color3.new(0.33333334326744,1,0),Color3.new(1,1,0),Color3.new(0.33333334326744,0,0.49803924560547),Color3.new(1,0,0.49803924560547),Color3.new(0.33333334326744,0.33333334326744,0.49803924560547),Color3.new(1,0.33333334326744,0.49803924560547),Color3.new(0.33333334326744,0.66666668653488,0.49803924560547),Color3.new(1,0.66666668653488,0.49803924560547),Color3.new(0.33333334326744,1,0.49803924560547),Color3.new(1,1,0.49803924560547),Color3.new(0.33333334326744,0,1),Color3.new(1,0,1),Color3.new(0.33333334326744,0.33333334326744,1),Color3.new(1,0.33333334326744,1),Color3.new(0.33333334326744,0.66666668653488,1),Color3.new(1,0.66666668653488,1),Color3.new(0.33333334326744,1,1),Color3.new(1,1,1)}
 			local customColors = {}
-
-			local function updateColor(noupdate)
-				local relativeX,relativeY,relativeStripY = 219 - hue*219, 199 - sat*199, 199 - val*199
-				local hsvColor = Color3.fromHSV(hue,sat,val)
-
-				if noupdate == 2 or not noupdate then
-					hueInput.Text = tostring(math.ceil(359*hue))
-					satInput.Text = tostring(math.ceil(255*sat))
-					valInput.Text = tostring(math.floor(255*val))
-				end
-				if noupdate == 1 or not noupdate then
-					redInput.Text = tostring(math.floor(255*red))
-					greenInput.Text = tostring(math.floor(255*green))
-					blueInput.Text = tostring(math.floor(255*blue))
-				end
-
-				chosenColor = Color3.new(red,green,blue)
-
-				colorScope.Position = UDim2.new(0,relativeX-9,0,relativeY-9)
-				colorStrip.ImageColor3 = Color3.fromHSV(hue,sat,1)
-				colorArrow.Position = UDim2.new(0,-2,0,relativeStripY-4)
-				previewFrame.BackgroundColor3 = chosenColor
-
-				newMt.Color = chosenColor
-				newMt.OnPreview:Fire(chosenColor)
-			end
-
-			local function colorSpaceInput()
-				local relativeX = mouse.X - colorSpace.AbsolutePosition.X
-				local relativeY = mouse.Y - colorSpace.AbsolutePosition.Y
-
-				if relativeX < 0 then relativeX = 0 elseif relativeX > 219 then relativeX = 219 end
-				if relativeY < 0 then relativeY = 0 elseif relativeY > 199 then relativeY = 199 end
-
-				hue = (219 - relativeX)/219
-				sat = (199 - relativeY)/199
-
-				local hsvColor = Color3.fromHSV(hue,sat,val)
-				red,green,blue = hsvColor.r,hsvColor.g,hsvColor.b
-
+      
+      local function updateColor(noupdate)
+        local relativeX, relativeY, relativeStripY = 219 - hue * 219, 199 - sat * 199, 199 - val * 199
+        local hsvColor = Color3.fromHSV(hue, sat, val)
+        
+        if noupdate == 2 or not noupdate then
+          hueInput.Text = tostring(math.ceil(359 * hue))
+          satInput.Text = tostring(math.ceil(255 * sat))
+          valInput.Text = tostring(math.floor(255 * val))
+        end
+        if noupdate == 1 or not noupdate then
+          redInput.Text = tostring(math.floor(255 * red))
+          greenInput.Text = tostring(math.floor(255 * green))
+          blueInput.Text = tostring(math.floor(255 * blue))
+        end
+        
+        chosenColor = Color3.new(red, green, blue)
+        colorScope.Position = UDim2.new(0, (relativeX - 9), 0, (relativeY - 9))
+        colorStrip.ImageColor3 = Color3.fromHSV(hue, sat, 1)
+        colorArrow.Position = UDim2.new(0, -2, 0, (relativeStripY - 4))
+        previewFrame.BackgroundColor3 = chosenColor
+        
+        newMt.Color = chosenColor
+        newMt.OnPreview:Fire(chosenColor)
+      end
+      
+      local function handleInputBegan(input, updateFunc)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+          while user:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+            updateFunc()task.wait()
+          end
+        end
+      end
+      
+      local function colorSpaceInput()
+        local relativeX = mouse.X - colorSpace.AbsolutePosition.X
+        local relativeY = mouse.Y - colorSpace.AbsolutePosition.Y
+        
+        if relativeX < 0 then relativeX = 0 elseif relativeX > 219 then relativeX = 219 end
+        if relativeY < 0 then relativeY = 0 elseif relativeY > 199 then relativeY = 199 end
+        
+        hue = (219 - relativeX) / 219
+        sat = (199 - relativeY) / 199
+        
+        local hsvColor = Color3.fromHSV(hue, sat, val)
+        red, green, blue = hsvColor.R, hsvColor.G, hsvColor.B
 				updateColor()
-			end
-
-			local function colorStripInput()
-				local relativeY = mouse.Y - colorStrip.AbsolutePosition.Y
-
-				if relativeY < 0 then relativeY = 0 elseif relativeY > 199 then relativeY = 199 end	
-
-				val = (199 - relativeY)/199
-
-				local hsvColor = Color3.fromHSV(hue,sat,val)
-				red,green,blue = hsvColor.r,hsvColor.g,hsvColor.b
-
+      end
+      
+      local function colorStripInput()
+        local relativeY = mouse.Y - colorStrip.AbsolutePosition.Y
+        
+        if relativeY < 0 then relativeY = 0 elseif relativeY > 199 then relativeY = 199 end	
+        
+        val = (199 - relativeY) / 199
+        
+        local hsvColor = Color3.fromHSV(hue, sat, val)
+        red, green, blue = hsvColor.R, hsvColor.G, hsvColor.B
 				updateColor()
-			end
-
-			local function hookButtons(frame,func)
+      end
+      
+      colorSpace.InputBegan:Connect(function(input) handleInputBegan(input, colorSpaceInput) end)
+      colorStrip.InputBegan:Connect(function(input) handleInputBegan(input, colorStripInput) end)
+      
+      local function hookButtons(frame, func)
         frame.ArrowFrame.Up.InputBegan:Connect(function(input)
-          if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            frame.ArrowFrame.Up.BackgroundTransparency = 0.5
-          elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+          if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             local releaseEvent, runEvent
-            
             local startTime = tick()
             local pressing = true
             local startNum = tonumber(frame.Text)
             
             if not startNum then return end
             
-            releaseEvent = user.InputEnded:Connect(function(input)
-              if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
-              
-              releaseEvent:Disconnect()
-              pressing = false
+            releaseEvent = user.InputEnded:Connect(function(endInput)
+              if endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
+                releaseEvent:Disconnect()
+                pressing = false
+              end
             end)
             
             startNum = startNum + 1
@@ -9198,28 +9207,20 @@ local function main()
           end
         end)
         
-        frame.ArrowFrame.Up.InputEnded:Connect(function(input)
-          if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            frame.ArrowFrame.Up.BackgroundTransparency = 1
-          end
-        end)
-        
         frame.ArrowFrame.Down.InputBegan:Connect(function(input)
-          if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            frame.ArrowFrame.Down.BackgroundTransparency = 0.5
-          elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+          if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             local releaseEvent, runEvent
-            
             local startTime = tick()
             local pressing = true
             local startNum = tonumber(frame.Text)
             
             if not startNum then return end
             
-            releaseEvent = user.InputEnded:Connect(function(input)
-              if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
-              releaseEvent:Disconnect()
-              pressing = false
+            releaseEvent = user.InputEnded:Connect(function(endInput)
+              if endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
+                releaseEvent:Disconnect()
+                pressing = false
+              end
             end)
             
             startNum = startNum - 1
@@ -9234,68 +9235,33 @@ local function main()
             end
           end
         end)
-        
-        frame.ArrowFrame.Down.InputEnded:Connect(function(input)
-          if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            frame.ArrowFrame.Down.BackgroundTransparency = 1
-          end
-				end)
-			end
-
-      colorSpace.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-          local releaseEvent, mouseEvent
-          
-          releaseEvent = user.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-              releaseEvent:Disconnect()
-              mouseEvent:Disconnect()
-            end
-          end)
-          
-          mouseEvent = user.InputChanged:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-              colorSpaceInput()
-            end
-          end)
-          
-          colorSpaceInput()
-        end
-      end)
+      end
       
-      colorStrip.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-          local releaseEvent, mouseEvent
+      --[[local function UpdateBox(TextBox, Value, IsHSV, ...)
+        local number = tonumber(TextBox.Text)
+        if number then
+          number = math.clamp(math.floor(number), 0, Value) / Value
+          local HSV = Color3.fromHSV(func(number))
+          red, green, blue = HSV.R, HSV.G, HSV.B
           
-          releaseEvent = user.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-              releaseEvent:Disconnect()
-              mouseEvent:Disconnect()
-            end
-          end)
-          
-          mouseEvent = user.InputChanged:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-              colorStripInput()
-            end
-          end)
-          
-          colorStripInput()
+          TextBox.Text = tostring(number):sub(4)
+          updateColor(IsHSV)
         end
-			end)
-			
+      end]]
+      
 			local function updateHue(str)
 				local num = tonumber(str)
 				if num then
 					hue = math.clamp(math.floor(num),0,359)/359
 					local hsvColor = Color3.fromHSV(hue,sat,val)
 					red,green,blue = hsvColor.r,hsvColor.g,hsvColor.b
+					
 					hueInput.Text = tostring(hue*359)
-					updateColor(1)
-				end
+          updateColor(1)
+        end
 			end
-			hueInput.FocusLost:Connect(function() updateHue(hueInput.Text) end) hookButtons(hueInput,updateHue)
-
+      hueInput.FocusLost:Connect(function() updateHue(hueInput.Text) end) hookButtons(hueInput, hueInput)
+			
 			local function updateSat(str)
 				local num = tonumber(str)
 				if num then
@@ -9343,7 +9309,7 @@ local function main()
 				end
 			end
 			greenInput.FocusLost:Connect(function() updateGreen(greenInput.Text) end) hookButtons(greenInput,updateGreen)
-
+			
 			local function updateBlue(str)
 				local num = tonumber(str)
 				if num then
@@ -9355,7 +9321,7 @@ local function main()
 				end
 			end
 			blueInput.FocusLost:Connect(function() updateBlue(blueInput.Text) end) hookButtons(blueInput,updateBlue)
-
+			
 			local colorChoice = Instance.new("TextButton")
 			colorChoice.Name = "Choice"
 			colorChoice.Size = UDim2.new(0,25,0,18)
@@ -9369,14 +9335,14 @@ local function main()
 				local newColor = colorChoice:Clone()
 				newColor.BackgroundColor3 = v
 				newColor.Position = UDim2.new(0,1 + 30*column,0,21 + 23*row)
-
+				
 				newColor.MouseButton1Click:Connect(function()
 					red,green,blue = v.r,v.g,v.b
 					local newColor = Color3.new(red,green,blue)
 					hue,sat,val = Color3.toHSV(newColor)
 					updateColor()
-				end)	
-
+				end)
+				
 				newColor.Parent = basicColorsFrame
 				column = column + 1
 				if column == 6 then row = row + 1 column = 0 end
