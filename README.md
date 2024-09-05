@@ -24,6 +24,6 @@ more in soon:
       parent:<Name>
       only:players, only:scripts, only:remotes
     Properties:
-      type:boolean
+      type:<type> - Exemple: ( type:boolean )
       only:locked, only:unlocked
 ```
