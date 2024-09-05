@@ -12,8 +12,18 @@ this is not the final version
 
 more in soon:
 ```
-  Fix Draggable
-  Fix Clicks
-  Fix Colorpicker
-  Fix Scroll
+  Warn: These are just features that could be added in the future.
+  
+  Change Theme
+  Fix UI Drag
+  pick color by clicking on an object [ Color Picker ]
+  Search Bar Filters:
+    Explorer:
+      isa:<BasePart>
+      class:<ClassName>
+      parent:<Name>
+      only:players, only:scripts, only:remotes
+    Properties:
+      type:boolean
+      only:locked, only:unlocked
 ```
