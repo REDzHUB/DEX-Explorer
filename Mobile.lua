@@ -1,18 +1,26 @@
 --[[
-  github: https://github.com/LorekeeperZinnia/Dex
-  
-  New Dex
-  Final Version
-  Developed by Moon
-  Modified for Infinite Yield
-  
-  Dex is a debugging suite designed to help the user debug games and find any potential vulnerabilities.
+	github: https://github.com/LorekeeperZinnia/Dex
+	
+	New Dex
+	Final Version
+	Developed by Moon
+	Modified for Infinite Yield
+	
+	Dex is a debugging suite designed to help the user debug games and find any potential vulnerabilities.
 ]]
+
+	
 
 local cloneref = cloneref or (function(...) return ... end)
 local getnilinstances = getnilinstances or (function() return {} end)
 
-local nodes = {};
+local nodes, service = {}, setmetatable({}, {
+	__index = function(self, name)
+		local serv = cloneref(game:GetService(name))
+		self[name] = serv
+		return serv
+	end
+})
 
 local selection = nil;
 
@@ -27,15 +35,15 @@ Explorer = function()
 -- Common Locals
 
 local Decompile do
-  local Success, Decompile_Source = pcall(function()
-    return game:HttpGet("https://raw.githubusercontent.com/w-a-e/Advanced-Decompiler-V3/main/init.lua", true)
-  end)
-  
-  if Success then
-    local CONSTANTS = [[
+	local Success, Decompile_Source = pcall(function()
+		return game:HttpGet("https://raw.githubusercontent.com/w-a-e/Advanced-Decompiler-V3/main/init.lua", true)
+	end)
+	
+	if Success then
+		local CONSTANTS = [[
 local ENABLED_REMARKS = {
-  NATIVE_REMARK = true,
-  INLINE_REMARK = true
+	NATIVE_REMARK = true,
+	INLINE_REMARK = true
 }
 
 local DECOMPILER_TIMEOUT = 10
@@ -47,58 +55,58 @@ local SHOW_OPERATION_NAMES = false
 local SHOW_MISC_OPERATIONS = false
 local LIST_USED_GLOBALS = true
 local RETURN_ELAPSED_TIME = false]]
-
-    local func = loadstring(
-      string.gsub(
-        string.gsub(
-          Decompile_Source, "return %(x %% 2^32%) // %(2^disp%)", "return math.floor((x %% 2^32) / (2^disp))", 1
-        ), ";;CONSTANTS HERE;;", CONSTANTS
-      ), "Advanced-Decompiler-V3"
-    )
-    
-    if func then func() end
-    
-    local HttpService = game:GetService("HttpService")
-    
-    local _ENV = (getgenv or getrenv or getfenv)()
-    Decompile = _ENV.decompile
-    
-    --[[local request = request or http_request or (syn and syn.request)
-    
-    local cleanScript = function(ucScript, cUrl)
-      local Url = (cUrl or "http://localhost:5000/fix_script")
-      
-      local result = request({
-        Url = Url,
-        Method = "POST",
-        Headers = { ["Content-Type"] = "application/json" },
-        Body = HttpService:JSONEncode({ script = ucScript })
-      })
-      
-      return (result.Success and result.fixed_script) or nil
-    end
-    
-    local BetterDecompiler = function(Source, Enabled, cUrl)
-      local Success, result = pcall(function()
-        return Decompile(Source)
-      end)
-      
-      if Success and result then
-        if Enabled then
-          local _Success, _result = pcall(cleanScript, Source, cUrl)
-          
-          if _Success and _result then
-            return _result
-          end
-        end
-        return result
-      end
-    end
-    
-    _ENV.decompile = function(Source)
-      return BetterDecompiler(Source, true)
-    end]]
-  end
+		
+		local func = loadstring(
+			string.gsub(
+				string.gsub(
+					Decompile_Source, "return %(x %% 2^32%) // %(2^disp%)", "return math.floor((x %% 2^32) / (2^disp))", 1
+				), ";;CONSTANTS HERE;;", CONSTANTS
+			), "Advanced-Decompiler-V3"
+		)
+		
+		if func then func() end
+		
+		local HttpService = service.HttpService
+		
+		local _ENV = (getgenv or getrenv or getfenv)()
+		Decompile = _ENV.decompile
+		
+		--[[local request = request or http_request or (syn and syn.request)
+		
+		local cleanScript = function(ucScript, cUrl)
+			local Url = (cUrl or "http://localhost:5000/fix_script")
+			
+			local result = request({
+				Url = Url,
+				Method = "POST",
+				Headers = { ["Content-Type"] = "application/json" },
+				Body = HttpService:JSONEncode({ script = ucScript })
+			})
+			
+			return (result.Success and result.fixed_script) or nil
+		end
+		
+		local BetterDecompiler = function(Source, Enabled, cUrl)
+			local Success, result = pcall(function()
+				return Decompile(Source)
+			end)
+			
+			if Success and result then
+				if Enabled then
+					local _Success, _result = pcall(cleanScript, Source, cUrl)
+					
+					if _Success and _result then
+						return _result
+					end
+				end
+				return result
+			end
+		end
+		
+		_ENV.decompile = function(Source)
+			return BetterDecompiler(Source, true)
+		end]]
+	end
 end
 
 local Main,Lib,Apps,Settings -- Main Containers
@@ -145,7 +153,7 @@ local function main()
 	local nilMap,nilCons = {},{}
 	local connectSignal = game.DescendantAdded.Connect
 	local addObject,removeObject,moveObject = nil,nil,nil
-
+	
 	addObject = function(root)
 		if nodes[root] then return end
 		
@@ -243,7 +251,7 @@ local function main()
 			end
 		end
 	end
-
+	
 	removeObject = function(root)
 		local node = nodes[root]
 		if not node then return end
@@ -280,7 +288,7 @@ local function main()
 			end
 		end
 	end
-
+	
 	moveObject = function(obj)
 		local node = nodes[obj]
 		if not node then return end
@@ -361,7 +369,7 @@ local function main()
 			end
 		end
 	end
-
+	
 	Explorer.ViewWidth = 0
 	Explorer.Index = 0
 	Explorer.EntryIndent = 20
@@ -370,17 +378,17 @@ local function main()
 	
 	Explorer.InitRenameBox = function()
 		renameBox = create({{1,"TextBox",{BackgroundColor3=Color3.new(0.17647059261799,0.17647059261799,0.17647059261799),BorderColor3=Color3.new(0.062745101749897,0.51764708757401,1),BorderMode=2,ClearTextOnFocus=false,Font=3,Name="RenameBox",PlaceholderColor3=Color3.new(0.69803923368454,0.69803923368454,0.69803923368454),Position=UDim2.new(0,26,0,2),Size=UDim2.new(0,200,0,16),Text="",TextColor3=Color3.new(1,1,1),TextSize=14,TextXAlignment=0,Visible=false,ZIndex=2}}})
-
+		
 		renameBox.Parent = Explorer.Window.GuiElems.Content.List
-
+		
 		renameBox.FocusLost:Connect(function()
 			if not renamingNode then return end
-
+			
 			pcall(function() renamingNode.Obj.Name = renameBox.Text end)
 			renamingNode = nil
 			Explorer.Refresh()
 		end)
-
+		
 		renameBox.Focused:Connect(function()
 			renameBox.SelectionStart = 1
 			renameBox.CursorPosition = #renameBox.Text + 1
@@ -534,12 +542,12 @@ local function main()
 
 	Explorer.StartDrag = function(offX,offY)
 		if Explorer.Dragging then return end
-    for i,v in next, selection.List do
-      local Obj = v.Obj
-      if Obj.Parent == game or Obj:IsA("Player") then
-        return
-      end
-    end
+		for i,v in next, selection.List do
+			local Obj = v.Obj
+			if Obj.Parent == game or Obj:IsA("Player") then
+				return
+			end
+		end
 		Explorer.Dragging = true
 		
 		local dragTree = treeFrame:Clone()
@@ -631,109 +639,109 @@ local function main()
 		
 		local isRenaming = false
 		
-    newEntry.InputBegan:Connect(function(input)
-      local node = tree[index + Explorer.Index]
-      if not node or selection.Map[node] or (input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch) then return end
-      
-      newEntry.Indent.BackgroundColor3 = Settings.Theme.Button
-      newEntry.Indent.BorderSizePixel = 0
-      newEntry.Indent.BackgroundTransparency = 0
-    end)
-    
-    newEntry.InputEnded:Connect(function(input)
-      local node = tree[index + Explorer.Index]
-      if not node or selection.Map[node] or (input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch) then return end
-      
-      newEntry.Indent.BackgroundTransparency = 1
-    end)
-    
+		newEntry.InputBegan:Connect(function(input)
+			local node = tree[index + Explorer.Index]
+			if not node or selection.Map[node] or (input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch) then return end
+			
+			newEntry.Indent.BackgroundColor3 = Settings.Theme.Button
+			newEntry.Indent.BorderSizePixel = 0
+			newEntry.Indent.BackgroundTransparency = 0
+		end)
+		
+		newEntry.InputEnded:Connect(function(input)
+			local node = tree[index + Explorer.Index]
+			if not node or selection.Map[node] or (input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch) then return end
+			
+			newEntry.Indent.BackgroundTransparency = 1
+		end)
+		
 		newEntry.MouseButton1Down:Connect(function()
-		  
+			
 		end)
 		
 		newEntry.MouseButton1Up:Connect(function()
-		  
+			
 		end)
 		
-    newEntry.InputBegan:Connect(function(input)
-      if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        local releaseEvent, mouseEvent
-        
-        local mouse = Main.Mouse or plr:GetMouse()
-        local startX, startY
-        
-        if input.UserInputType == Enum.UserInputType.Touch then
-          startX = input.Position.X
-          startY = input.Position.Y
-        else
-          startX = mouse.X
-          startY = mouse.Y
-        end
-        
-        local listOffsetX = startX - treeFrame.AbsolutePosition.X
-        local listOffsetY = startY - treeFrame.AbsolutePosition.Y
-        
-        releaseEvent = cloneref(game:GetService("UserInputService")).InputEnded:Connect(function(input)
-          if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            releaseEvent:Disconnect()
-            mouseEvent:Disconnect()
-          end
-        end)
-        
-        mouseEvent = cloneref(game:GetService("UserInputService")).InputChanged:Connect(function(input)
-          if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            local currentX, currentY
-            
-            if input.UserInputType == Enum.UserInputType.Touch then
-              currentX = input.Position.X
-              currentY = input.Position.Y
-            else
-              currentX = mouse.X
-              currentY = mouse.Y
-            end
-            
-            local deltaX = currentX - startX
-            local deltaY = currentY - startY
-            local dist = math.sqrt(deltaX^2 + deltaY^2)
-            
-            if dist > 5 then
-              releaseEvent:Disconnect()
-              mouseEvent:Disconnect()
-              isRenaming = false
-              Explorer.StartDrag(listOffsetX, listOffsetY)
-            end
-          end
-        end)
-      end
-    end)
+		newEntry.InputBegan:Connect(function(input)
+			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+				local releaseEvent, mouseEvent
+				
+				local mouse = Main.Mouse or plr:GetMouse()
+				local startX, startY
+				
+				if input.UserInputType == Enum.UserInputType.Touch then
+					startX = input.Position.X
+					startY = input.Position.Y
+				else
+					startX = mouse.X
+					startY = mouse.Y
+				end
+				
+				local listOffsetX = startX - treeFrame.AbsolutePosition.X
+				local listOffsetY = startY - treeFrame.AbsolutePosition.Y
+				
+				releaseEvent = service.UserInputService.InputEnded:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+						releaseEvent:Disconnect()
+						mouseEvent:Disconnect()
+					end
+				end)
+				
+				mouseEvent = service.UserInputService.InputChanged:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+						local currentX, currentY
+						
+						if input.UserInputType == Enum.UserInputType.Touch then
+							currentX = input.Position.X
+							currentY = input.Position.Y
+						else
+							currentX = mouse.X
+							currentY = mouse.Y
+						end
+						
+						local deltaX = currentX - startX
+						local deltaY = currentY - startY
+						local dist = math.sqrt(deltaX^2 + deltaY^2)
+						
+						if dist > 5 then
+							releaseEvent:Disconnect()
+							mouseEvent:Disconnect()
+							isRenaming = false
+							Explorer.StartDrag(listOffsetX, listOffsetY)
+						end
+					end
+				end)
+			end
+		end)
 		
 		newEntry.MouseButton2Down:Connect(function()
 
 		end)
 		
-    newEntry.Indent.Expand.InputBegan:Connect(function(input)
-      local node = tree[index + Explorer.Index]
-      if not node or (input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch) then return end
-      
-      if input.UserInputType == Enum.UserInputType.Touch then
-        Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse_Over" or "Expand_Over")
-      elseif input.UserInputType == Enum.UserInputType.MouseMovement then
-        Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse_Over" or "Expand_Over")
-      end
+		newEntry.Indent.Expand.InputBegan:Connect(function(input)
+			local node = tree[index + Explorer.Index]
+			if not node or (input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch) then return end
+			
+			if input.UserInputType == Enum.UserInputType.Touch then
+				Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse_Over" or "Expand_Over")
+			elseif input.UserInputType == Enum.UserInputType.MouseMovement then
+				Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse_Over" or "Expand_Over")
+			end
 		end)
 		
-    newEntry.Indent.Expand.InputEnded:Connect(function(input)
-      local node = tree[index + Explorer.Index]
-      if not node or (input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch) then return end
-      
-      if input.UserInputType == Enum.UserInputType.Touch then
-        Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse" or "Expand")
-      elseif input.UserInputType == Enum.UserInputType.MouseMovement then
-        Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse" or "Expand")
-      end
-    end)
-    
-    newEntry.Indent.Expand.MouseButton1Down:Connect(function()
+		newEntry.Indent.Expand.InputEnded:Connect(function(input)
+			local node = tree[index + Explorer.Index]
+			if not node or (input.UserInputType ~= Enum.UserInputType.MouseMovement and input.UserInputType ~= Enum.UserInputType.Touch) then return end
+			
+			if input.UserInputType == Enum.UserInputType.Touch then
+				Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse" or "Expand")
+			elseif input.UserInputType == Enum.UserInputType.MouseMovement then
+				Explorer.MiscIcons:DisplayByKey(newEntry.Indent.Expand.Icon, expanded[node] and "Collapse" or "Expand")
+			end
+		end)
+		
+		newEntry.Indent.Expand.MouseButton1Down:Connect(function()
 			local node = tree[index + Explorer.Index]
 			if not node or #node == 0 then return end
 			
@@ -944,8 +952,8 @@ local function main()
 		end
 	end
 
-  Explorer.ShowRightClick = function(MousePos)
-    local Mouse = MousePos or Main.Mouse
+	Explorer.ShowRightClick = function(MousePos)
+		local Mouse = MousePos or Main.Mouse
 		local context = Explorer.RightClickContext
 		local absoluteSize = context.Gui.AbsoluteSize
 		context.MaxHeight = (absoluteSize.Y <= 600 and (absoluteSize.Y - 40)) or nil
@@ -982,37 +990,40 @@ local function main()
 		context:AddRegistered("JUMP_TO_PARENT")
 		context:AddRegistered("EXPAND_ALL")
 		context:AddRegistered("COLLAPSE_ALL")
-
+		
 		context:AddDivider()
 		if expanded == Explorer.SearchExpanded then context:AddRegistered("CLEAR_SEARCH_AND_JUMP_TO") end
 		if env.setclipboard then context:AddRegistered("COPY_PATH") end
 		context:AddRegistered("INSERT_OBJECT")
 		context:AddRegistered("SAVE_INST")
 		context:AddRegistered("CALL_FUNCTION")
-		context:AddRegistered("VIEW_CONNECTIONS")
+		-- context:AddRegistered("VIEW_CONNECTIONS")
 		context:AddRegistered("GET_REFERENCES")
 		context:AddRegistered("VIEW_API")
 		
 		context:QueueDivider()
-
+		
 		if presentClasses["BasePart"] or presentClasses["Model"] then
 			context:AddRegistered("TELEPORT_TO")
 			context:AddRegistered("VIEW_OBJECT")
 		end
 		if presentClasses["Tween"] then context:AddRegistered("PLAY_TWEEN") end
 		if presentClasses["Animation"] then
-		  context:AddRegistered("LOAD_ANIMATION")
-		  context:AddRegistered("STOP_ANIMATION")
+			context:AddRegistered("LOAD_ANIMATION")
+			context:AddRegistered("STOP_ANIMATION")
 		end
-    
+		
 		if presentClasses["TouchTransmitter"] then context:AddRegistered("FIRE_TOUCHTRANSMITTER", firetouchinterest == nil) end
 		if presentClasses["ClickDetector"] then context:AddRegistered("FIRE_CLICKDETECTOR", fireclickdetector == nil) end
 		if presentClasses["ProximityPrompt"] then context:AddRegistered("FIRE_PROXIMITYPROMPT", fireproximityprompt == nil) end
 		if presentClasses["Player"] then context:AddRegistered("SELECT_CHARACTER")context:AddRegistered("VIEW_PLAYER") end
-		if presentClasses["Players"] then context:AddRegistered("SELECT_LOCAL_PLAYER") end
+		if presentClasses["Players"] then
+			context:AddRegistered("SELECT_LOCAL_PLAYER")
+			context:AddRegistered("SELECT_ALL_CHARACTERS")
+		end
 		if presentClasses["LuaSourceContainer"] then
-		  context:AddRegistered("VIEW_SCRIPT")
-		  context:AddRegistered("SAVE_BYTECODE")
+			context:AddRegistered("VIEW_SCRIPT")
+			context:AddRegistered("SAVE_BYTECODE")
 		end
 		
 		if sMap[nilNode] then
@@ -1185,7 +1196,7 @@ local function main()
 				for ind = 1,#node do
 					local cNode = node[ind]
 					if ind == 1 then Explorer.MakeNodeVisible(cNode) end
-
+					
 					newSelection[count] = cNode
 					count = count + 1
 				end
@@ -1226,43 +1237,43 @@ local function main()
 			
 			if not plrRP then return end
 			
-      for _,node in next, sList do
-        local Obj = node.Obj
-        
-        if Obj:IsA("BasePart") then
-          if Obj.CanCollide then
-            plr.Character:MoveTo(Obj.Position)
-          else
-            plrRP.CFrame = CFrame.new(Obj.Position + Settings.Explorer.TeleportToOffset)
-          end
-          break
-        elseif Obj:IsA("Model") then
-          if Obj.PrimaryPart then
-            if Obj.PrimaryPart.CanCollide then
-              plr.Character:MoveTo(Obj.PrimaryPart.Position)
-            else
-              plrRP.CFrame = CFrame.new(Obj.PrimaryPart.Position + Settings.Explorer.TeleportToOffset)
-            end
-            break
-          else
-            local part = Obj:FindFirstChildWhichIsA("BasePart", true)
-            if part and nodes[part] then
-              if part.CanCollide then
-                plr.Character:MoveTo(part.Position)
-              else
-                plrRP.CFrame = CFrame.new(part.Position + Settings.Explorer.TeleportToOffset)
-              end
-              break
-            elseif Obj.WorldPivot then
-              plrRP.CFrame = Obj.WorldPivot
-            end
-          end
-        end
-      end
+			for _,node in next, sList do
+				local Obj = node.Obj
+				
+				if Obj:IsA("BasePart") then
+					if Obj.CanCollide then
+						plr.Character:MoveTo(Obj.Position)
+					else
+						plrRP.CFrame = CFrame.new(Obj.Position + Settings.Explorer.TeleportToOffset)
+					end
+					break
+				elseif Obj:IsA("Model") then
+					if Obj.PrimaryPart then
+						if Obj.PrimaryPart.CanCollide then
+							plr.Character:MoveTo(Obj.PrimaryPart.Position)
+						else
+							plrRP.CFrame = CFrame.new(Obj.PrimaryPart.Position + Settings.Explorer.TeleportToOffset)
+						end
+						break
+					else
+						local part = Obj:FindFirstChildWhichIsA("BasePart", true)
+						if part and nodes[part] then
+							if part.CanCollide then
+								plr.Character:MoveTo(part.Position)
+							else
+								plrRP.CFrame = CFrame.new(part.Position + Settings.Explorer.TeleportToOffset)
+							end
+							break
+						elseif Obj.WorldPivot then
+							plrRP.CFrame = Obj.WorldPivot
+						end
+					end
+				end
+			end
 		end})
 		
 		local OldAnimation
-    context:Register("PLAY_TWEEN",{Name = "Play Tween", IconMap = Explorer.MiscIcons, Icon = "Play", OnClick = function()
+		context:Register("PLAY_TWEEN",{Name = "Play Tween", IconMap = Explorer.MiscIcons, Icon = "Play", OnClick = function()
 			local sList = selection.List
 			
 			for i = 1, #sList do
@@ -1274,7 +1285,7 @@ local function main()
 		end})
 		
 		local OldAnimation
-    context:Register("LOAD_ANIMATION",{Name = "Load Animation", IconMap = Explorer.MiscIcons, Icon = "Play", OnClick = function()
+		context:Register("LOAD_ANIMATION",{Name = "Load Animation", IconMap = Explorer.MiscIcons, Icon = "Play", OnClick = function()
 			local sList = selection.List
 			
 			local Humanoid = plr.Character and plr.Character:FindFirstChild("Humanoid")
@@ -1285,7 +1296,7 @@ local function main()
 				local Obj = node.Obj
 				
 				if Obj:IsA("Animation") then
-				  if OldAnimation then OldAnimation:Stop() end
+					if OldAnimation then OldAnimation:Stop() end
 					OldAnimation = Humanoid:LoadAnimation(Obj)
 					OldAnimation:Play()
 					break
@@ -1293,7 +1304,7 @@ local function main()
 			end
 		end})
 		
-    context:Register("STOP_ANIMATION",{Name = "Stop Animation", IconMap = Explorer.MiscIcons, Icon = "Pause", OnClick = function()
+		context:Register("STOP_ANIMATION",{Name = "Stop Animation", IconMap = Explorer.MiscIcons, Icon = "Pause", OnClick = function()
 			local sList = selection.List
 			
 			local Humanoid = plr.Character and plr.Character:FindFirstChild("Humanoid")
@@ -1304,7 +1315,7 @@ local function main()
 				local Obj = node.Obj
 				
 				if Obj:IsA("Animation") then
-				  if OldAnimation then OldAnimation:Stop() end
+					if OldAnimation then OldAnimation:Stop() end
 					Humanoid:LoadAnimation(Obj):Stop()
 					break
 				end
@@ -1371,8 +1382,8 @@ local function main()
 			if str:sub(1, 27 + #plr.Name) == "game:GetService(\"Players\")." .. plr.Name then str = str:gsub("game:GetService%(\"Players\"%)." .. plr.Name, "game:GetService(\"Players\").LocalPlayer", 1) end
 			return str
 		end
-		  
-		context:Register("COPY_PATH",{Name = "Copy Path", OnClick = function()
+			
+		context:Register("COPY_PATH",{Name = "Copy Path", IconMap = Explorer.ClassIcons, Icon = 50, OnClick = function()
 			local sList = selection.List
 			if #sList == 1 then
 				env.setclipboard(clth(Explorer.GetInstancePath(sList[1].Obj)))
@@ -1398,23 +1409,23 @@ local function main()
 		end})
 
 		context:Register("CALL_FUNCTION",{Name = "Call Function", IconMap = Explorer.ClassIcons, Icon = 66, OnClick = function()
-      
+			
 		end})
 
 		context:Register("GET_REFERENCES",{Name = "Get Lua References", IconMap = Explorer.ClassIcons, Icon = 34, OnClick = function()
-		  
+			
 		end})
 		
 		context:Register("SAVE_INST",{Name = "Save to File", IconMap = Explorer.MiscIcons, Icon = "Save", OnClick = function()
-		  
+			
 		end})
 		
-		context:Register("VIEW_CONNECTIONS",{Name = "View Connections", OnClick = function()
-		  
-		end})
+		--[[context:Register("VIEW_CONNECTIONS",{Name = "View Connections", OnClick = function()
+			
+		end})]]
 		
 		context:Register("VIEW_API",{Name = "View API Page", IconMap = Explorer.MiscIcons, Icon = "Reference", OnClick = function()
-
+			
 		end})
 		
 		context:Register("VIEW_OBJECT",{Name = "View Object (Right click to reset)", IconMap = Explorer.ClassIcons, Icon = 5, OnClick = function()
@@ -1438,7 +1449,7 @@ local function main()
 			if not hrp then return end
 			for _, v in ipairs(selection.List) do if v.Obj and v.Obj:IsA("TouchTransmitter") then firetouchinterest(hrp, v.Obj.Parent, 0) end end
 		end})
-
+		
 		context:Register("FIRE_CLICKDETECTOR",{Name = "Fire ClickDetector", IconMap = Explorer.ClassIcons, Icon = 41, OnClick = function()
 			local hrp = plr.Character and plr.Character:FindFirstChild("HumanoidRootPart")
 			if not hrp then return end
@@ -1457,16 +1468,16 @@ local function main()
 		end})
 		
 		context:Register("SAVE_BYTECODE",{Name = "Save ScriptBytecode in Files", IconMap = Explorer.MiscIcons, Icon = "Save", OnClick = function()
-      for _,v in next, selection.List do
-        if v.Obj:IsA("LuaSourceContainer") then
-          local success, bytecode = pcall(getscriptbytecode, scr)
-          if success and type(bytecode) == "string" then
-            local Name = ("%i.Script.%s.txt"):format(game.PlaceId, scr.Name)
-            writefile(Name, bytecode)
-            task.wait(0.2)
-          end
-        end
-  		end
+			for _,v in next, selection.List do
+				if v.Obj:IsA("LuaSourceContainer") then
+					local success, bytecode = pcall(getscriptbytecode, scr)
+					if success and type(bytecode) == "string" then
+						local Name = ("%i.Script.%s.txt"):format(game.PlaceId, scr.Name)
+						writefile(Name, bytecode)
+						task.wait(0.2)
+					end
+				end
+			end
 		end})
 		
 		context:Register("SELECT_CHARACTER",{Name = "Select Character", IconMap = Explorer.ClassIcons, Icon = 9, OnClick = function()
@@ -1491,24 +1502,43 @@ local function main()
 			end
 		end})
 		
-		context:Register("VIEW_PLAYER",{Name = "View Player", IconMap = Explorer.ClassIcons, Icon = 9, OnClick = function()
+		context:Register("VIEW_PLAYER",{Name = "View Player", IconMap = Explorer.ClassIcons, Icon = 5, OnClick = function()
 			local newSelection = {}
 			local count = 1
 			local sList = selection.List
 			local isa = game.IsA
-      
+			
 			for i = 1,#sList do
 				local node = sList[i]
 				local Obj = node.Obj
 				if Obj:IsA("Player") and Obj.Character then
-				  workspace.CurrentCamera.CameraSubject = Obj.Character
-				  break
+					workspace.CurrentCamera.CameraSubject = Obj.Character
+					break
 				end
 			end
 		end})
-
+		
 		context:Register("SELECT_LOCAL_PLAYER",{Name = "Select Local Player", IconMap = Explorer.ClassIcons, Icon = 9, OnClick = function()
 			pcall(function() if nodes[plr] then selection:Set(nodes[plr]) Explorer.ViewNode(nodes[plr]) end end)
+		end})
+		
+		context:Register("SELECT_ALL_CHARACTERS",{Name = "Select All Characters", IconMap = Explorer.ClassIcons, Icon = 2, OnClick = function()
+			local newSelection = {}
+			local sList = selection.List
+			
+			for i,v in next, service.Players:GetPlayers() do
+				if v.Character and nodes[v.Character] then
+					if i == 1 then Explorer.MakeNodeVisible(v.Character) end
+					table.insert(newSelection, nodes[v.Character])
+				end
+			end
+			
+			selection:SetTable(newSelection)
+			if #newSelection > 0 then
+				Explorer.ViewNode(newSelection[1])
+			else
+				Explorer.Refresh()
+			end
 		end})
 		
 		context:Register("REFRESH_NIL",{Name = "Refresh Nil Instances", OnClick = function()
@@ -1715,303 +1745,89 @@ local function main()
 
 		Explorer.InsertObjectContext = context
 	end
-
-	--[[
-		Headers, Setups, Predicate, ObjectDefs
-	]]
-	Explorer.SearchFilters = { -- TODO: Use data table (so we can disable some if funcs don't exist)
-		Comparison = {
-			["isa"] = function(argString)
-				local lower = string.lower
-				local find = string.find
-				local classQuery = string.split(argString)[1]
-				if not classQuery then return end
-				classQuery = lower(classQuery)
-
-				local className
-				for class,_ in pairs(API.Classes) do
-					local cName = lower(class)
-					if cName == classQuery then
-						className = class
-						break
-					elseif find(cName,classQuery,1,true) then
-						className = class
-					end
-				end
-				if not className then return end
-
-				return {
-					Headers = {"local isa = game.IsA"},
-					Predicate = "isa(obj,'" .. className .. "')"
-				}
-			end,
-			["remotes"] = function(argString)
-				return {
-					Headers = {"local isa = game.IsA"},
-					Predicate = "isa(obj,'RemoteEvent') or isa(obj,'RemoteFunction')"
-				}
-			end,
-			["bindables"] = function(argString)
-				return {
-					Headers = {"local isa = game.IsA"},
-					Predicate = "isa(obj,'BindableEvent') or isa(obj,'BindableFunction')"
-				}
-			end,
-			["rad"] = function(argString)
-				local num = tonumber(argString)
-				if not num then return end
-
-				if not service.Players.LocalPlayer.Character or not service.Players.LocalPlayer.Character:FindFirstChild("HumanoidRootPart") or not service.Players.LocalPlayer.Character.HumanoidRootPart:IsA("BasePart") then return end
-
-				return {
-					Headers = {"local isa = game.IsA", "local hrp = service.Players.LocalPlayer.Character.HumanoidRootPart"},
-					Setups = {"local hrpPos = hrp.Position"},
-					ObjectDefs = {"local isBasePart = isa(obj,'BasePart')"},
-					Predicate = "(isBasePart and (obj.Position-hrpPos).Magnitude <= "..num..")"
-				}
-			end,
-		},
-		Specific = {
-			["players"] = function()
-				return function() return service.Players:GetPlayers() end
-			end,
-			["loadedmodules"] = function()
-				return env.getloadedmodules
-			end,
-		},
-		Default = function(argString,caseSensitive)
-			local cleanString = argString:gsub("\"","\\\""):gsub("\n","\\n")
-			if caseSensitive then
-				return {
-					Headers = {"local find = string.find"},
-					ObjectDefs = {"local objName = tostring(obj)"},
-					Predicate = "find(objName,\"" .. cleanString .. "\",1,true)"
-				}
-			else
-				return {
-					Headers = {"local lower = string.lower","local find = string.find","local tostring = tostring"},
-					ObjectDefs = {"local lowerName = lower(tostring(obj))"},
-					Predicate = "find(lowerName,\"" .. cleanString:lower() .. "\",1,true)"
-				}
-			end
-		end,
-		SpecificDefault = function(n)
-			return {
-				Headers = {},
-				ObjectDefs = {"local isSpec"..n.." = specResults["..n.."][node]"},
-				Predicate = "isSpec"..n
-			}
-		end,
-	}
-
-	Explorer.BuildSearchFunc = function(query)
-		local specFilterList,specMap = {},{}
-		local finalPredicate = ""
-		local rep = string.rep
-		local formatQuery = query:gsub("\\.","  "):gsub('".-"',function(str) return rep(" ",#str) end)
-		local headers = {}
-		local objectDefs = {}
-		local setups = {}
-		local find = string.find
-		local sub = string.sub
-		local lower = string.lower
-		local match = string.match
-		local ops = {
-			["("] = "(",
-			[")"] = ")",
-			["||"] = " or ",
-			["&&"] = " and "
-		}
-		local filterCount = 0
-		local compFilters = Explorer.SearchFilters.Comparison
-		local specFilters = Explorer.SearchFilters.Specific
-		local init = 1
-		local lastOp = nil
-
-		local function processFilter(dat)
-			if dat.Headers then
-				local t = dat.Headers
-				for i = 1,#t do
-					headers[t[i]] = true
-				end
-			end
-
-			if dat.ObjectDefs then
-				local t = dat.ObjectDefs
-				for i = 1,#t do
-					objectDefs[t[i]] = true
-				end
-			end
-
-			if dat.Setups then
-				local t = dat.Setups
-				for i = 1,#t do
-					setups[t[i]] = true
-				end
-			end
-
-			finalPredicate = finalPredicate..dat.Predicate
-		end
-
-		local found = {}
-		local foundData = {}
-		local find = string.find
-		local sub = string.sub
-
-		local function findAll(str,pattern)
-			local count = #found+1
-			local init = 1
-			local sz = #pattern
-			local x,y,extra = find(str,pattern,init,true)
-			while x do
-				found[count] = x
-				foundData[x] = {sz,pattern}
-
-				count = count+1
-				init = y+1
-				x,y,extra = find(str,pattern,init,true)
-			end
-		end
-		local start = tick()
-		findAll(formatQuery,'&&')
-		findAll(formatQuery,"||")
-		findAll(formatQuery,"(")
-		findAll(formatQuery,")")
-		table.sort(found)
-		table.insert(found,#formatQuery+1)
-
-		local function inQuotes(str)
-			local len = #str
-			if sub(str,1,1) == '"' and sub(str,len,len) == '"' then
-				return sub(str,2,len-1)
-			end
-		end
-
-		for i = 1,#found do
-			local nextInd = found[i]
-			local nextData = foundData[nextInd] or {1}
-			local op = ops[nextData[2]]
-			local term = sub(query,init,nextInd-1)
-			term = match(term,"^%s*(.-)%s*$") or "" -- Trim
-
-			if #term > 0 then
-				if sub(term,1,1) == "!" then
-					term = sub(term,2)
-					finalPredicate = finalPredicate.."not "
-				end
-
-				local qTerm = inQuotes(term)
-				if qTerm then
-					processFilter(Explorer.SearchFilters.Default(qTerm,true))
-				else
-					local x,y = find(term,"%S+")
-					if x then
-						local first = sub(term,x,y)
-						local specifier = sub(first,1,1) == "/" and lower(sub(first,2))
-						local compFunc = specifier and compFilters[specifier]
-						local specFunc = specifier and specFilters[specifier]
-
-						if compFunc then
-							local argStr = sub(term,y+2)
-							local ret = compFunc(inQuotes(argStr) or argStr)
-							if ret then
-								processFilter(ret)
-							else
-								finalPredicate = finalPredicate.."false"
-							end
-						elseif specFunc then
-							local argStr = sub(term,y+2)
-							local ret = specFunc(inQuotes(argStr) or argStr)
-							if ret then
-								if not specMap[term] then
-									specFilterList[#specFilterList + 1] = ret
-									specMap[term] = #specFilterList
-								end
-								processFilter(Explorer.SearchFilters.SpecificDefault(specMap[term]))
-							else
-								finalPredicate = finalPredicate.."false"
-							end
-						else
-							processFilter(Explorer.SearchFilters.Default(term))
-						end
-					end
-				end				
-			end
-
-			if op then
-				finalPredicate = finalPredicate..op
-				if op == "(" and (#term > 0 or lastOp == ")") then -- Handle bracket glitch
-					return
-				else
-					lastOp = op
-				end
-			end
-			init = nextInd+nextData[1]
-		end
-
-		local finalSetups = ""
-		local finalHeaders = ""
-		local finalObjectDefs = ""
-
-		for setup,_ in next,setups do finalSetups = finalSetups..setup.."\n" end
-		for header,_ in next,headers do finalHeaders = finalHeaders..header.."\n" end
-		for oDef,_ in next,objectDefs do finalObjectDefs = finalObjectDefs..oDef.."\n" end
-
-		local template = [==[
-local searchResults = searchResults
-local nodes = nodes
-local expandTable = Explorer.SearchExpanded
-local specResults = specResults
-local service = service
-
-%s
-local function search(root)	
-%s
 	
-	local expandedpar = false
-	for i = 1,#root do
-		local node = root[i]
-		local obj = node.Obj
+	Explorer._SearchFilters = {} do
+		local Filters = Explorer._SearchFilters
 		
-%s
-		
-		if %s then
-			expandTable[node] = 0
-			searchResults[node] = true
-			if not expandedpar then
-				local parnode = node.Parent
-				while parnode and (not searchResults[parnode] or expandTable[parnode] == 0) do
-					expandTable[parnode] = true
-					searchResults[parnode] = true
-					parnode = parnode.Parent
-				end
-				expandedpar = true
+		local function NewFilter(list, func)
+			for _,v in next, list do
+				Filters[v:lower() .. ":"] = func
 			end
 		end
 		
-		if #node > 0 then search(node) end
-	end
-end
-return search]==]
-
-		local funcStr = template:format(finalHeaders,finalSetups,finalObjectDefs,finalPredicate)
-		local s,func = pcall(loadstring,funcStr)
-		if not s or not func then return nil,specFilterList end
-
-		local env = setmetatable({["searchResults"] = searchResults, ["nodes"] = nodes, ["Explorer"] = Explorer, ["specResults"] = specResults,
-			["service"] = service},{__index = getfenv()})
-		setfenv(func,env)
-
-		return func(),specFilterList
-	end
-
+		local Only = {
+			remotes = {"RemoteEvent", "RemoteFunction", "BindableEvent", "BindableFunction"},
+			scripts = {"Script", "LocalScript", "ModuleScript"},
+			players = {"Player"}
+		}
+		
+		NewFilter({"parent", "p"}, function(Obj, str) return Obj.Parent and (Obj.Parent.Name:lower()):find(str) end)
+		NewFilter({"class", "c"}, function(Obj, str) return (Obj.ClassName:lower()):find(str) end)
+		NewFilter({"isa", "i"}, function(Obj, str) return Obj:IsA(str) end)
+		
+		NewFilter({"only", "o"}, function(Obj, str)
+												local Special = Only[str]
+												return Special and table.find(Special, Obj.ClassName)
+								end)
+				end
+	
 	Explorer.DoSearch = function(query)
 		table.clear(Explorer.SearchExpanded)
 		table.clear(searchResults)
-		expanded = (#query == 0 and Explorer.Expanded or Explorer.SearchExpanded)
-		searchFunc = nil
-
-		if #query > 0 then
+		expanded = (#query == 0 and Explorer.Expanded) or Explorer.SearchExpanded
+		
+		local tostr = tostring;
+		local tfind = table.find;
+		
+		local Filters = Explorer._SearchFilters
+		local expandTable = Explorer.SearchExpanded
+		
+		local allnodes = nodes[game]
+		
+		local defaultSearch = (function(Obj, str) return (Obj.Name:lower()):find(str, 1, true) end)
+		
+		local function searchTable(root, str, func)
+			local expandedpar = false
+			for _,node in ipairs(root) do
+				if func(node.Obj, str) then
+					expandTable[node] = 0
+					searchResults[node] = true
+					if not expandedpar then
+						local parnode = node.Parent
+						while parnode and (not searchResults[parnode] or expandTable[parnode] == 0) do
+							expanded[parnode] = true
+							searchResults[parnode] = true
+							parnode = parnode.Parent
+						end
+						expandedpar = true
+					end
+				end
+				
+				if #node > 0 then searchTable(node, str, func) end
+			end
+		end
+		
+		local function Search(query)
+			if query:len() == 0 then return end
+			
+			local lower = query:lower()
+			local split = lower:split(":")
+			local Filter = (Filters[split[1] .. ":"]) or nil
+			
+			if Filter then
+				searchTable(allnodes, (split[2] or ""), Filter)
+			else
+				searchTable(allnodes, (lower or ""), defaultSearch)
+			end
+		end
+		
+		for _,v in ipairs(query:split(",")) do
+			if v:len() > 0 then
+				Search(v)
+			end
+		end
+		
+		--[=[if #query > 0 then
 			local expandTable = Explorer.SearchExpanded
 			local specFilters
 			
@@ -2040,7 +1856,7 @@ return search]==]
 							expandedpar = true
 						end
 					elseif ExplorerSearch[lower(tostring(obj))] then
-            
+						
 					end
 					
 					if #node > 0 then defaultSearch(node) end
@@ -2076,8 +1892,8 @@ return search]==]
 				searchFunc(nilNode)
 				--warn(tick()-start)
 			end
-		end
-
+		end]=]
+		
 		Explorer.ForceUpdate()
 	end
 
@@ -2088,15 +1904,15 @@ return search]==]
 	end
 
 	Explorer.InitSearch = function()
-    local TweenService = game:GetService("TweenService")
-    local SearchFrame = Explorer.GuiElems.ToolBar.SearchFrame
+		local TweenService = service.TweenService
+		local SearchFrame = Explorer.GuiElems.ToolBar.SearchFrame
 		local searchBox = SearchFrame.SearchBox
 		Explorer.GuiElems.SearchBar = searchBox
 		
 		local TweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quint)
 		local Tweens = {
-		  Start = TweenService:Create(SearchFrame.UIStroke, TweenInfo, { Color = Color3.fromRGB(0, 120, 215) }),
-		  End = TweenService:Create(SearchFrame.UIStroke, TweenInfo, { Color = Color3.fromRGB(42, 42, 42) })
+			Start = TweenService:Create(SearchFrame.UIStroke, TweenInfo, { Color = Color3.fromRGB(0, 120, 215) }),
+			End = TweenService:Create(SearchFrame.UIStroke, TweenInfo, { Color = Color3.fromRGB(42, 42, 42) })
 		}
 		
 		searchBox.FocusLost:Connect(function() Tweens.End:Play() end)
@@ -2708,9 +2524,9 @@ local function main()
 		if typeName == "Color3" then
 			return Lib.ColorToBytes(val)
 		elseif typeName == "NumberRange" then
-      return val.Min..", "..val.Max
-    end
-    
+			return val.Min..", "..val.Max
+		end
+		
 		return tostring(val)
 	end
 
@@ -4254,15 +4070,15 @@ local function main()
 	end
 
 	Properties.InitSearch = function()
-    local TweenService = game:GetService("TweenService")
-    local SearchFrame = Properties.GuiElems.ToolBar.SearchFrame
+		local TweenService = service.TweenService
+		local SearchFrame = Properties.GuiElems.ToolBar.SearchFrame
 		local searchBox = SearchFrame.SearchBox
 		
 		local TweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quint)
 		
 		local Tweens = {
-		  Start = TweenService:Create(SearchFrame.UIStroke, TweenInfo, { Color = Color3.fromRGB(0, 120, 215) }),
-		  End = TweenService:Create(SearchFrame.UIStroke, TweenInfo, { Color = Color3.fromRGB(42, 42, 42) })
+			Start = TweenService:Create(SearchFrame.UIStroke, TweenInfo, { Color = Color3.fromRGB(0, 120, 215) }),
+			End = TweenService:Create(SearchFrame.UIStroke, TweenInfo, { Color = Color3.fromRGB(42, 42, 42) })
 		}
 		
 		Lib.ViewportTextBox.convert(searchBox)
@@ -4336,7 +4152,7 @@ local function main()
 		})
 
 		-- Vars
-		categoryOrder =  API.CategoryOrder
+		categoryOrder =	API.CategoryOrder
 		for category,_ in next,categoryOrder do
 			if not Properties.CollapsedCategories[category] then
 				expanded["CAT_"..category] = true
@@ -4484,7 +4300,7 @@ local function main()
 		save.Size = UDim2.new(0.3,0,0,20)
 		save.Text = "Save to File"
 		save.TextColor3 = Color3.new(1,1,1)
-
+		
 		save.MouseButton1Click:Connect(function()
 			local source = codeFrame:GetText()
 			local filename = "Place_"..game.PlaceId.."_Script_"..os.time()..".txt"
@@ -4494,7 +4310,7 @@ local function main()
 				env.movefileas(filename, ".txt")
 			end
 		end)
-
+		
 		local dumpbtn = Instance.new("TextButton",window.GuiElems.Content)
 		dumpbtn.BackgroundTransparency = 1
 		dumpbtn.Position = UDim2.new(0.7,0,0,0)
@@ -4505,91 +4321,92 @@ local function main()
 		dumpbtn.MouseButton1Click:Connect(function()
 			if PreviousScr ~= nil then
 				pcall(function()
-                    -- thanks King.Kevin#6025 you'll obviously be credited (no discord tag since that can easily be impersonated)
-                    local getgc = getgc or get_gc_objects
-                    local getupvalues = (debug and debug.getupvalues) or getupvalues or getupvals
-                    local getconstants = (debug and debug.getconstants) or getconstants or getconsts
-                    local getinfo = (debug and (debug.getinfo or debug.info)) or getinfo
-                    local original = ("\n-- // Function Dumper made by King.Kevin\n-- // Script Path: %s\n\n--[["):format(PreviousScr:GetFullName())
-                    local dump = original
-                    local functions, function_count, data_base = {}, 0, {}
-                    function functions:add_to_dump(str, indentation, new_line)
-                        local new_line = new_line or true
-                        dump = dump .. ("%s%s%s"):format(string.rep("    ", indentation), tostring(str), new_line and "\n" or "")
-                    end
-                    function functions:get_function_name(func)
-                        local n = getinfo(func).name
-                        return n ~= "" and n or "Unknown Name"
-                    end
-                    function functions:dump_table(input, indent, index)
-                        local indent = indent < 0 and 0 or indent
-                        functions:add_to_dump(("%s [%s] %s"):format(tostring(index), tostring(typeof(input)), tostring(input)), indent - 1)
-                        local count = 0
-                        for index, value in pairs(input) do
-                            count = count + 1
-                            if type(value) == "function" then
-                                functions:add_to_dump(("%d [function] = %s"):format(count, functions:get_function_name(value)), indent)
-                            elseif type(value) == "table" then
-                                if not data_base[value] then
-                                    data_base[value] = true
-                                    functions:add_to_dump(("%d [table]:"):format(count), indent)
-                                    functions:dump_table(value, indent + 1, index)
-                                else
-                                    functions:add_to_dump(("%d [table] (Recursive table detected)"):format(count), indent)
-                                end
-                            else
-                                functions:add_to_dump(("%d [%s] = %s"):format(count, tostring(typeof(value)), tostring(value)), indent)
-                            end
-                        end
-                    end
-                    function functions:dump_function(input, indent)
-                        functions:add_to_dump(("\nFunction Dump: %s"):format(functions:get_function_name(input)), indent)
-                        functions:add_to_dump(("\nFunction Upvalues: %s"):format(functions:get_function_name(input)), indent)
-                        for index, upvalue in pairs(getupvalues(input)) do
-                            if type(upvalue) == "function" then
-                                functions:add_to_dump(("%d [function] = %s"):format(index, functions:get_function_name(upvalue)), indent + 1)
-                            elseif type(upvalue) == "table" then
-                                if not data_base[upvalue] then
-                                    data_base[upvalue] = true
-                                    functions:add_to_dump(("%d [table]:"):format(index), indent + 1)
-                                    functions:dump_table(upvalue, indent + 2, index)
-                                else
-                                    functions:add_to_dump(("%d [table] (Recursive table detected)"):format(index), indent + 1)
-                                end
-                            else
-                                functions:add_to_dump(("%d [%s] = %s"):format(index, tostring(typeof(upvalue)), tostring(upvalue)), indent + 1)
-                            end
-                        end
-                        functions:add_to_dump(("\nFunction Constants: %s"):format(functions:get_function_name(input)), indent)
-                        for index, constant in pairs(getconstants(input)) do
-                            if type(constant) == "function" then
-                                functions:add_to_dump(("%d [function] = %s"):format(index, functions:get_function_name(constant)), indent + 1)
-                            elseif type(constant) == "table" then
-                                if not data_base[constant] then
-                                    data_base[constant] = true
-                                    functions:add_to_dump(("%d [table]:"):format(index), indent + 1)
-                                    functions:dump_table(constant, indent + 2, index)
-                                else
-                                    functions:add_to_dump(("%d [table] (Recursive table detected)"):format(index), indent + 1)
-                                end
-                            else
-                                functions:add_to_dump(("%d [%s] = %s"):format(index, tostring(typeof(constant)), tostring(constant)), indent + 1)
-                            end
-                        end
-                    end
-                    for _, _function in pairs(getgc()) do
-                        if typeof(_function) == "function" and getfenv(_function).script and getfenv(_function).script == PreviousScr then
-                            functions:dump_function(_function, 0)
-                            functions:add_to_dump("\n" .. ("="):rep(100), 0, false)
-                        end
-                    end
-                    local source = codeFrame:GetText()
-                    if dump ~= original then source = source .. dump .. "]]" end
-                    codeFrame:SetText(source)
-                end)
-            end
+					-- thanks King.Kevin#6025 you'll obviously be credited (no discord tag since that can easily be impersonated)
+					local getgc = getgc or get_gc_objects
+					local getupvalues = (debug and debug.getupvalues) or getupvalues or getupvals
+					local getconstants = (debug and debug.getconstants) or getconstants or getconsts
+					local getinfo = (debug and (debug.getinfo or debug.info)) or getinfo
+					local original = ("\n-- // Function Dumper made by King.Kevin\n-- // Script Path: %s\n\n--[["):format(PreviousScr:GetFullName())
+					local dump = original
+					local functions, function_count, data_base = {}, 0, {}
+					function functions:add_to_dump(str, indentation, new_line)
+						local new_line = new_line or true
+						dump = dump .. ("%s%s%s"):format(string.rep("		", indentation), tostring(str), new_line and "\n" or "")
+					end
+					function functions:get_function_name(func)
+					  local n = getinfo(func).name
+					  return n ~= "" and n or "Unknown Name"
+					end
+					function functions:dump_table(input, indent, index)
+					  local indent = indent < 0 and 0 or indent
+					  functions:add_to_dump(("%s [%s] %s"):format(tostring(index), tostring(typeof(input)), tostring(input)), indent - 1)
+					  local count = 0
+					  for index, value in pairs(input) do
+					    count = count + 1
+					    if type(value) == "function" then
+					      functions:add_to_dump(("%d [function] = %s"):format(count, functions:get_function_name(value)), indent)
+					    elseif type(value) == "table" then
+					      if not data_base[value] then
+					        data_base[value] = true
+					        functions:add_to_dump(("%d [table]:"):format(count), indent)
+					        functions:dump_table(value, indent + 1, index)
+					      else
+					        functions:add_to_dump(("%d [table] (Recursive table detected)"):format(count), indent)
+					      end
+					      else
+												functions:add_to_dump(("%d [%s] = %s"):format(count, tostring(typeof(value)), tostring(value)), indent)
+										 end
+									end
+							 end
+							 function functions:dump_function(input, indent)
+									functions:add_to_dump(("\nFunction Dump: %s"):format(functions:get_function_name(input)), indent)
+									functions:add_to_dump(("\nFunction Upvalues: %s"):format(functions:get_function_name(input)), indent)
+									for index, upvalue in pairs(getupvalues(input)) do
+										 if type(upvalue) == "function" then
+												functions:add_to_dump(("%d [function] = %s"):format(index, functions:get_function_name(upvalue)), indent + 1)
+										 elseif type(upvalue) == "table" then
+												if not data_base[upvalue] then
+													 data_base[upvalue] = true
+													 functions:add_to_dump(("%d [table]:"):format(index), indent + 1)
+													 functions:dump_table(upvalue, indent + 2, index)
+												else
+													 functions:add_to_dump(("%d [table] (Recursive table detected)"):format(index), indent + 1)
+												end
+										 else
+												functions:add_to_dump(("%d [%s] = %s"):format(index, tostring(typeof(upvalue)), tostring(upvalue)), indent + 1)
+										 end
+									end
+									functions:add_to_dump(("\nFunction Constants: %s"):format(functions:get_function_name(input)), indent)
+									for index, constant in pairs(getconstants(input)) do
+										 if type(constant) == "function" then
+												functions:add_to_dump(("%d [function] = %s"):format(index, functions:get_function_name(constant)), indent + 1)
+										 elseif type(constant) == "table" then
+												if not data_base[constant] then
+													 data_base[constant] = true
+													 functions:add_to_dump(("%d [table]:"):format(index), indent + 1)
+													 functions:dump_table(constant, indent + 2, index)
+												else
+													 functions:add_to_dump(("%d [table] (Recursive table detected)"):format(index), indent + 1)
+												end
+										 else
+												functions:add_to_dump(("%d [%s] = %s"):format(index, tostring(typeof(constant)), tostring(constant)), indent + 1)
+										 end
+									end
+							 end
+							 for _, _function in pairs(getgc()) do
+									if typeof(_function) == "function" and getfenv(_function).script and getfenv(_function).script == PreviousScr then
+										 functions:dump_function(_function, 0)
+										 functions:add_to_dump("\n" .. ("="):rep(100), 0, false)
+									end
+							 end
+							 local source = codeFrame:GetText()
+							 
+							 if dump ~= original then source = source .. dump .. "]]" end
+							 codeFrame:SetText(source)
+						end)
+				 end
 		end)
-	end
+	 end
 
 	return ScriptViewer
 end
@@ -4797,7 +4614,7 @@ local function main()
 					txt = txt:match'^%s*(.*%S)' or ''
 					if #txt ~= 0 then
 						t[#t+1] = {text=txt}
-					end    
+					end		
 				end
 
 				s:gsub('<([?!/]?)([-:_%w]+)%s*(/?>?)([^<]*)', function(type, name, closed, txt)
@@ -4838,11 +4655,11 @@ local function main()
 							end, 1)
 						end
 						-- elseif '?' == type then
-						--   print('?  ' .. name .. ' // ' .. attrs .. '$$')
+						--	 print('?	' .. name .. ' // ' .. attrs .. '$$')
 						-- elseif '-' == type then
-						--   print('comment  ' .. name .. ' // ' .. attrs .. '$$')
+						--	 print('comment	' .. name .. ' // ' .. attrs .. '$$')
 						-- else
-						--   print('o  ' .. #p .. ' // ' .. name .. ' // ' .. attrs .. '$$')
+						--	 print('o	' .. #p .. ' // ' .. name .. ' // ' .. attrs .. '$$')
 					end
 				end)
 
@@ -5022,14 +4839,14 @@ local function main()
 	Lib.ProtectedGuis = {}
 	
 	Lib.ShowGui = function(gui)
-	  if env.gethui then
-	    gui.Parent = env.gethui()
-	  elseif env.protectgui then
-	    env.protectgui(gui)
-	    gui.Parent = Main.GuiHolder
-	  else
-	    gui.Parent = Main.GuiHolder
-	  end
+		if env.gethui then
+			gui.Parent = env.gethui()
+		elseif env.protectgui then
+			env.protectgui(gui)
+			gui.Parent = Main.GuiHolder
+		else
+			gui.Parent = Main.GuiHolder
+		end
 	end
 
 	Lib.ColorToBytes = function(col)
@@ -5208,211 +5025,211 @@ local function main()
 	Lib.IconMap = (function()
 		local funcs = {}
 		local _MapId, _Icons = (483448923), {
-    	["Accessory"] = 32;
-    	["Accoutrement"] = 32;
-    	["AdService"] = 73;
-    	["Animation"] = 60;
-    	["AnimationController"] = 60;
-    	["AnimationTrack"] = 60;
-    	["Animator"] = 60;
-    	["ArcHandles"] = 56;
-    	["AssetService"] = 72;
-    	["Attachment"] = 34;
-    	["Backpack"] = 20;
-    	["BadgeService"] = 75;
-    	["BallSocketConstraint"] = 89;
-    	["BillboardGui"] = 64;
-    	["BinaryStringValue"] = 4;
-    	["BindableEvent"] = 67;
-    	["BindableFunction"] = 66;
-    	["BlockMesh"] = 8;
-    	["BloomEffect"] = 90;
-    	["BlurEffect"] = 90;
-    	["BodyAngularVelocity"] = 14;
-    	["BodyForce"] = 14;
-    	["BodyGyro"] = 14;
-    	["BodyPosition"] = 14;
-    	["BodyThrust"] = 14;
-    	["BodyVelocity"] = 14;
-    	["BoolValue"] = 4;
-    	["BoxHandleAdornment"] = 54;
-    	["BrickColorValue"] = 4;
-    	["Camera"] = 5;
-    	["CFrameValue"] = 4;
-    	["CharacterMesh"] = 60;
-    	["Chat"] = 33;
-    	["ClickDetector"] = 41;
-    	["CollectionService"] = 30;
-    	["Color3Value"] = 4;
-    	["ColorCorrectionEffect"] = 90;
-    	["ConeHandleAdornment"] = 54;
-    	["Configuration"] = 58;
-    	["ContentProvider"] = 72;
-    	["ContextActionService"] = 41;
-    	["CoreGui"] = 46;
-    	["CoreScript"] = 18;
-    	["CornerWedgePart"] = 1;
-    	["CustomEvent"] = 4;
-    	["CustomEventReceiver"] = 4;
-    	["CylinderHandleAdornment"] = 54;
-    	["CylinderMesh"] = 8;
-    	["CylindricalConstraint"] = 89;
-    	["Debris"] = 30;
-    	["Decal"] = 7;
-    	["Dialog"] = 62;
-    	["DialogChoice"] = 63;
-    	["DoubleConstrainedValue"] = 4;
-    	["Explosion"] = 36;
-    	["FileMesh"] = 8;
-    	["Fire"] = 61;
-    	["Flag"] = 38;
-    	["FlagStand"] = 39;
-    	["FloorWire"] = 4;
-    	["Folder"] = 70;
-    	["ForceField"] = 37;
-    	["Frame"] = 48;
-    	["GamePassService"] = 19;
-    	["Glue"] = 34;
-    	["GuiButton"] = 52;
-    	["GuiMain"] = 47;
-    	["GuiService"] = 47;
-    	["Handles"] = 53;
-    	["HapticService"] = 84;
-    	["Hat"] = 45;
-    	["HingeConstraint"] = 89;
-    	["Hint"] = 33;
-    	["HopperBin"] = 22;
-    	["HttpService"] = 76;
-    	["Humanoid"] = 9;
-    	["ImageButton"] = 52;
-    	["ImageLabel"] = 49;
-    	["InsertService"] = 72;
-    	["IntConstrainedValue"] = 4;
-    	["IntValue"] = 4;
-    	["JointInstance"] = 34;
-    	["JointsService"] = 34;
-    	["Keyframe"] = 60;
-    	["KeyframeSequence"] = 60;
-    	["KeyframeSequenceProvider"] = 60;
-    	["Lighting"] = 13;
-    	["LineHandleAdornment"] = 54;
-    	["LocalScript"] = 18;
-    	["LogService"] = 87;
-    	["MarketplaceService"] = 46;
-    	["Message"] = 33;
-    	["Model"] = 2;
-    	["ModuleScript"] = 71;
-    	["Motor"] = 34;
-    	["Motor6D"] = 34;
-    	["MoveToConstraint"] = 89;
-    	["NegateOperation"] = 78;
-    	["NetworkClient"] = 16;
-    	["NetworkReplicator"] = 29;
-    	["NetworkServer"] = 15;
-    	["NumberValue"] = 4;
-    	["ObjectValue"] = 4;
-    	["Pants"] = 44;
-    	["ParallelRampPart"] = 1;
-    	["Part"] = 1;
-    	["ParticleEmitter"] = 69;
-    	["PartPairLasso"] = 57;
-    	["PathfindingService"] = 37;
-    	["Platform"] = 35;
-    	["Player"] = 12;
-    	["PlayerGui"] = 46;
-    	["Players"] = 21;
-    	["PlayerScripts"] = 82;
-    	["PointLight"] = 13;
-    	["PointsService"] = 83;
-    	["Pose"] = 60;
-    	["PrismaticConstraint"] = 89;
-    	["PrismPart"] = 1;
-    	["PyramidPart"] = 1;
-    	["RayValue"] = 4;
-    	["ReflectionMetadata"] = 86;
-    	["ReflectionMetadataCallbacks"] = 86;
-    	["ReflectionMetadataClass"] = 86;
-    	["ReflectionMetadataClasses"] = 86;
-    	["ReflectionMetadataEnum"] = 86;
-    	["ReflectionMetadataEnumItem"] = 86;
-    	["ReflectionMetadataEnums"] = 86;
-    	["ReflectionMetadataEvents"] = 86;
-    	["ReflectionMetadataFunctions"] = 86;
-    	["ReflectionMetadataMember"] = 86;
-    	["ReflectionMetadataProperties"] = 86;
-    	["ReflectionMetadataYieldFunctions"] = 86;
-    	["RemoteEvent"] = 80;
-    	["RemoteFunction"] = 79;
-    	["ReplicatedFirst"] = 72;
-    	["ReplicatedStorage"] = 72;
-    	["RightAngleRampPart"] = 1;
-    	["RocketPropulsion"] = 14;
-    	["RodConstraint"] = 89;
-    	["RopeConstraint"] = 89;
-    	["Rotate"] = 34;
-    	["RotateP"] = 34;
-    	["RotateV"] = 34;
-    	["RunService"] = 66;
-    	["ScreenGui"] = 47;
-    	["Script"] = 6;
-    	["ScrollingFrame"] = 48;
-    	["Seat"] = 35;
-    	["Selection"] = 55;
-    	["SelectionBox"] = 54;
-    	["SelectionPartLasso"] = 57;
-    	["SelectionPointLasso"] = 57;
-    	["SelectionSphere"] = 54;
-    	["ServerScriptService"] = 0;
-    	["ServerStorage"] = 74;
-    	["Shirt"] = 43;
-    	["ShirtGraphic"] = 40;
-    	["SkateboardPlatform"] = 35;
-    	["Sky"] = 28;
-    	["SlidingBallConstraint"] = 89;
-    	["Smoke"] = 59;
-    	["Snap"] = 34;
-    	["Sound"] = 11;
-    	["SoundService"] = 31;
-    	["Sparkles"] = 42;
-    	["SpawnLocation"] = 25;
-    	["SpecialMesh"] = 8;
-    	["SphereHandleAdornment"] = 54;
-    	["SpotLight"] = 13;
-    	["SpringConstraint"] = 89;
-    	["StarterCharacterScripts"] = 82;
-    	["StarterGear"] = 20;
-    	["StarterGui"] = 46;
-    	["StarterPack"] = 20;
-    	["StarterPlayer"] = 88;
-    	["StarterPlayerScripts"] = 82;
-    	["Status"] = 2;
-    	["StringValue"] = 4;
-    	["SunRaysEffect"] = 90;
-    	["SurfaceGui"] = 64;
-    	["SurfaceLight"] = 13;
-    	["SurfaceSelection"] = 55;
-    	["Team"] = 24;
-    	["Teams"] = 23;
-    	["TeleportService"] = 81;
-    	["Terrain"] = 65;
-    	["TerrainRegion"] = 65;
-    	["TestService"] = 68;
-    	["TextBox"] = 51;
-    	["TextButton"] = 51;
-    	["TextLabel"] = 50;
-    	["Texture"] = 10;
-    	["TextureTrail"] = 4;
-    	["Tool"] = 17;
-    	["TouchTransmitter"] = 37;
-    	["TrussPart"] = 1;
-    	["UnionOperation"] = 77;
-    	["UserInputService"] = 84;
-    	["Vector3Value"] = 4;
-    	["VehicleSeat"] = 35;
-    	["VelocityMotor"] = 34;
-    	["WedgePart"] = 1;
-    	["Weld"] = 34;
-    	["Workspace"] = 19;
+			["Accessory"] = 32;
+			["Accoutrement"] = 32;
+			["AdService"] = 73;
+			["Animation"] = 60;
+			["AnimationController"] = 60;
+			["AnimationTrack"] = 60;
+			["Animator"] = 60;
+			["ArcHandles"] = 56;
+			["AssetService"] = 72;
+			["Attachment"] = 34;
+			["Backpack"] = 20;
+			["BadgeService"] = 75;
+			["BallSocketConstraint"] = 89;
+			["BillboardGui"] = 64;
+			["BinaryStringValue"] = 4;
+			["BindableEvent"] = 67;
+			["BindableFunction"] = 66;
+			["BlockMesh"] = 8;
+			["BloomEffect"] = 90;
+			["BlurEffect"] = 90;
+			["BodyAngularVelocity"] = 14;
+			["BodyForce"] = 14;
+			["BodyGyro"] = 14;
+			["BodyPosition"] = 14;
+			["BodyThrust"] = 14;
+			["BodyVelocity"] = 14;
+			["BoolValue"] = 4;
+			["BoxHandleAdornment"] = 54;
+			["BrickColorValue"] = 4;
+			["Camera"] = 5;
+			["CFrameValue"] = 4;
+			["CharacterMesh"] = 60;
+			["Chat"] = 33;
+			["ClickDetector"] = 41;
+			["CollectionService"] = 30;
+			["Color3Value"] = 4;
+			["ColorCorrectionEffect"] = 90;
+			["ConeHandleAdornment"] = 54;
+			["Configuration"] = 58;
+			["ContentProvider"] = 72;
+			["ContextActionService"] = 41;
+			["CoreGui"] = 46;
+			["CoreScript"] = 18;
+			["CornerWedgePart"] = 1;
+			["CustomEvent"] = 4;
+			["CustomEventReceiver"] = 4;
+			["CylinderHandleAdornment"] = 54;
+			["CylinderMesh"] = 8;
+			["CylindricalConstraint"] = 89;
+			["Debris"] = 30;
+			["Decal"] = 7;
+			["Dialog"] = 62;
+			["DialogChoice"] = 63;
+			["DoubleConstrainedValue"] = 4;
+			["Explosion"] = 36;
+			["FileMesh"] = 8;
+			["Fire"] = 61;
+			["Flag"] = 38;
+			["FlagStand"] = 39;
+			["FloorWire"] = 4;
+			["Folder"] = 70;
+			["ForceField"] = 37;
+			["Frame"] = 48;
+			["GamePassService"] = 19;
+			["Glue"] = 34;
+			["GuiButton"] = 52;
+			["GuiMain"] = 47;
+			["GuiService"] = 47;
+			["Handles"] = 53;
+			["HapticService"] = 84;
+			["Hat"] = 45;
+			["HingeConstraint"] = 89;
+			["Hint"] = 33;
+			["HopperBin"] = 22;
+			["HttpService"] = 76;
+			["Humanoid"] = 9;
+			["ImageButton"] = 52;
+			["ImageLabel"] = 49;
+			["InsertService"] = 72;
+			["IntConstrainedValue"] = 4;
+			["IntValue"] = 4;
+			["JointInstance"] = 34;
+			["JointsService"] = 34;
+			["Keyframe"] = 60;
+			["KeyframeSequence"] = 60;
+			["KeyframeSequenceProvider"] = 60;
+			["Lighting"] = 13;
+			["LineHandleAdornment"] = 54;
+			["LocalScript"] = 18;
+			["LogService"] = 87;
+			["MarketplaceService"] = 46;
+			["Message"] = 33;
+			["Model"] = 2;
+			["ModuleScript"] = 71;
+			["Motor"] = 34;
+			["Motor6D"] = 34;
+			["MoveToConstraint"] = 89;
+			["NegateOperation"] = 78;
+			["NetworkClient"] = 16;
+			["NetworkReplicator"] = 29;
+			["NetworkServer"] = 15;
+			["NumberValue"] = 4;
+			["ObjectValue"] = 4;
+			["Pants"] = 44;
+			["ParallelRampPart"] = 1;
+			["Part"] = 1;
+			["ParticleEmitter"] = 69;
+			["PartPairLasso"] = 57;
+			["PathfindingService"] = 37;
+			["Platform"] = 35;
+			["Player"] = 12;
+			["PlayerGui"] = 46;
+			["Players"] = 21;
+			["PlayerScripts"] = 82;
+			["PointLight"] = 13;
+			["PointsService"] = 83;
+			["Pose"] = 60;
+			["PrismaticConstraint"] = 89;
+			["PrismPart"] = 1;
+			["PyramidPart"] = 1;
+			["RayValue"] = 4;
+			["ReflectionMetadata"] = 86;
+			["ReflectionMetadataCallbacks"] = 86;
+			["ReflectionMetadataClass"] = 86;
+			["ReflectionMetadataClasses"] = 86;
+			["ReflectionMetadataEnum"] = 86;
+			["ReflectionMetadataEnumItem"] = 86;
+			["ReflectionMetadataEnums"] = 86;
+			["ReflectionMetadataEvents"] = 86;
+			["ReflectionMetadataFunctions"] = 86;
+			["ReflectionMetadataMember"] = 86;
+			["ReflectionMetadataProperties"] = 86;
+			["ReflectionMetadataYieldFunctions"] = 86;
+			["RemoteEvent"] = 80;
+			["RemoteFunction"] = 79;
+			["ReplicatedFirst"] = 72;
+			["ReplicatedStorage"] = 72;
+			["RightAngleRampPart"] = 1;
+			["RocketPropulsion"] = 14;
+			["RodConstraint"] = 89;
+			["RopeConstraint"] = 89;
+			["Rotate"] = 34;
+			["RotateP"] = 34;
+			["RotateV"] = 34;
+			["RunService"] = 66;
+			["ScreenGui"] = 47;
+			["Script"] = 6;
+			["ScrollingFrame"] = 48;
+			["Seat"] = 35;
+			["Selection"] = 55;
+			["SelectionBox"] = 54;
+			["SelectionPartLasso"] = 57;
+			["SelectionPointLasso"] = 57;
+			["SelectionSphere"] = 54;
+			["ServerScriptService"] = 0;
+			["ServerStorage"] = 74;
+			["Shirt"] = 43;
+			["ShirtGraphic"] = 40;
+			["SkateboardPlatform"] = 35;
+			["Sky"] = 28;
+			["SlidingBallConstraint"] = 89;
+			["Smoke"] = 59;
+			["Snap"] = 34;
+			["Sound"] = 11;
+			["SoundService"] = 31;
+			["Sparkles"] = 42;
+			["SpawnLocation"] = 25;
+			["SpecialMesh"] = 8;
+			["SphereHandleAdornment"] = 54;
+			["SpotLight"] = 13;
+			["SpringConstraint"] = 89;
+			["StarterCharacterScripts"] = 82;
+			["StarterGear"] = 20;
+			["StarterGui"] = 46;
+			["StarterPack"] = 20;
+			["StarterPlayer"] = 88;
+			["StarterPlayerScripts"] = 82;
+			["Status"] = 2;
+			["StringValue"] = 4;
+			["SunRaysEffect"] = 90;
+			["SurfaceGui"] = 64;
+			["SurfaceLight"] = 13;
+			["SurfaceSelection"] = 55;
+			["Team"] = 24;
+			["Teams"] = 23;
+			["TeleportService"] = 81;
+			["Terrain"] = 65;
+			["TerrainRegion"] = 65;
+			["TestService"] = 68;
+			["TextBox"] = 51;
+			["TextButton"] = 51;
+			["TextLabel"] = 50;
+			["Texture"] = 10;
+			["TextureTrail"] = 4;
+			["Tool"] = 17;
+			["TouchTransmitter"] = 37;
+			["TrussPart"] = 1;
+			["UnionOperation"] = 77;
+			["UserInputService"] = 84;
+			["Vector3Value"] = 4;
+			["VehicleSeat"] = 35;
+			["VelocityMotor"] = 34;
+			["WedgePart"] = 1;
+			["Weld"] = 34;
+			["Workspace"] = 19;
 		
 		}
 		funcs.ExplorerIcons = { ["MapId"] = _MapId, ["Icons"] = _Icons }
@@ -5443,41 +5260,41 @@ local function main()
 		funcs.DisplayByKey = function(self, obj, key)
 			if self.IndexDict[key] then
 				self:Display(obj, self.IndexDict[key])
-      else
-        local rmdEntry = RMD.Classes[obj.ClassName]
-        Explorer.ClassIcons:Display(obj, rmdEntry and rmdEntry.ExplorerImageIndex or 0)
+			else
+				local rmdEntry = RMD.Classes[obj.ClassName]
+				Explorer.ClassIcons:Display(obj, rmdEntry and rmdEntry.ExplorerImageIndex or 0)
 			end
 		end
 		
 		funcs.IconDehash = function(self, _id)
-		  return math.floor(_id / 14 % 14), math.floor(_id % 14)
+			return math.floor(_id / 14 % 14), math.floor(_id % 14)
 		end
 		
 		funcs.GetExplorerIcon = function(self, obj, index)
-		  index = (self.ExplorerIcons.Icons[index] or 0)
-      local row, col = self:IconDehash(index)
-      local MapSize = Vector2.new(256, 256)
-      local pad, border = 2, 1
-      local IconSize = 16
-      
-      obj.Position = UDim2.new(-col - (pad * (col + 1) + border) / IconSize, 0, -row - (pad * (row + 1) + border) / IconSize, 0)
+			index = (self.ExplorerIcons.Icons[index] or 0)
+			local row, col = self:IconDehash(index)
+			local MapSize = Vector2.new(256, 256)
+			local pad, border = 2, 1
+			local IconSize = 16
+			
+			obj.Position = UDim2.new(-col - (pad * (col + 1) + border) / IconSize, 0, -row - (pad * (row + 1) + border) / IconSize, 0)
 			obj.Size = UDim2.new(MapSize.X / IconSize, 0, MapSize.Y / IconSize, 0)
 		end
 		
-    funcs.DisplayExplorerIcons = function(self, Frame, index)
-      if Frame:FindFirstChild("IconMap") then
-        self:GetExplorerIcon(Frame.IconMap, index)
-      else
-        Frame.ClipsDescendants = true
-        
-        local obj = Instance.new("ImageLabel", Frame)
-        obj.BackgroundTransparency = 1
-        obj.Image = ("http://www.roblox.com/asset/?id=" .. (self.ExplorerIcons.MapId))
-        obj.Name = "IconMap"
-        self:GetExplorerIcon(obj, index)
-      end
-    end
-	  
+		funcs.DisplayExplorerIcons = function(self, Frame, index)
+			if Frame:FindFirstChild("IconMap") then
+				self:GetExplorerIcon(Frame.IconMap, index)
+			else
+				Frame.ClipsDescendants = true
+				
+				local obj = Instance.new("ImageLabel", Frame)
+				obj.BackgroundTransparency = 1
+				obj.Image = ("http://www.roblox.com/asset/?id=" .. (self.ExplorerIcons.MapId))
+				obj.Name = "IconMap"
+				self:GetExplorerIcon(obj, index)
+			end
+		end
+		
 		funcs.SetDict = function(self,dict)
 			self.IndexDict = dict
 		end
@@ -5610,150 +5427,150 @@ local function main()
 				scrollThumbFrame.Size = UDim2.new(1,0,1,-32)
 			end
 			
-      local scrollThumb = createSimple("Frame", {
-        BackgroundColor3 = Color3.new(120/255, 120/255, 120/255),
-        BorderSizePixel = 0,
-        Parent = scrollThumbFrame
-      })
-      
-      local markerFrame = createSimple("Frame", {
-        BackgroundTransparency = 1,
-        Name = "Markers",
-        Size = UDim2.new(1, 0, 1, 0),
-        Parent = scrollThumbFrame
-      })
-      
-      local buttonPress = false
-      local thumbPress = false
-      local thumbFramePress = false
-      
-      local function handleButtonPress(button, scrollDirection)
-        if self:CanScroll(scrollDirection) then
-          button.BackgroundTransparency = 0.5
-          self:ScrollToDirection(scrollDirection)
-          self.Scrolled:Fire()
-          local buttonTick = tick()
-          local releaseEvent
-          releaseEvent = user.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-              releaseEvent:Disconnect()
-              button.BackgroundTransparency = checkMouseInGui(button) and 0.8 or 1
-              buttonPress = false
-            end
-          end)
-          while buttonPress do
-            if tick() - buttonTick >= 0.25 and self:CanScroll(scrollDirection) then
-              self:ScrollToDirection(scrollDirection)
-              self.Scrolled:Fire()
-            end
-            task.wait()
-          end
-        end
-      end
-      
-      button1.MouseButton1Down:Connect(function(input)
-        buttonPress = true
-        handleButtonPress(button1, "Up")
-      end)
-      
-      button1.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-          button1.BackgroundTransparency = 1
-        end
-      end)
-      
-      button2.MouseButton1Down:Connect(function(input)
-        buttonPress = true
-        handleButtonPress(button2, "Down")
-      end)
-      
-      button2.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-          button2.BackgroundTransparency = 1
-        end
-      end)
-      
-      scrollThumb.InputBegan:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-          local dir = self.Horizontal and "X" or "Y"
-          local lastThumbPos = nil
-          thumbPress = true
-          scrollThumb.BackgroundTransparency = 0
-          local mouseOffset = mouse[dir] - scrollThumb.AbsolutePosition[dir]
-          local releaseEvent
-          local mouseEvent
-          
-          releaseEvent = user.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-              releaseEvent:Disconnect()
-              if mouseEvent then mouseEvent:Disconnect() end
-              scrollThumb.BackgroundTransparency = 0.2
-              thumbPress = false
-            end
-          end)
-          
-          mouseEvent = user.InputChanged:Connect(function(input)
-            if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and thumbPress then
-              local thumbFrameSize = scrollThumbFrame.AbsoluteSize[dir] - scrollThumb.AbsoluteSize[dir]
-              local pos = mouse[dir] - scrollThumbFrame.AbsolutePosition[dir] - mouseOffset
-              if pos > thumbFrameSize then pos = thumbFrameSize
-              elseif pos < 0 then pos = 0 end
-              if lastThumbPos ~= pos then
-                lastThumbPos = pos
-                self:ScrollTo(math.floor(0.5 + pos / thumbFrameSize * (self.TotalSpace - self.VisibleSpace)))
-              end
-            end
-          end)
-        end
-      end)
-      
-      scrollThumb.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-          scrollThumb.BackgroundTransparency = 0
-        end
-      end)
-      
-      scrollThumbFrame.InputBegan:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not checkMouseInGui(scrollThumb) then
-          local dir = self.Horizontal and "X" or "Y"
-          local scrollDir = (mouse[dir] >= scrollThumb.AbsolutePosition[dir] + scrollThumb.AbsoluteSize[dir]) and 1 or 0
-          local function doTick()
-            local scrollSize = self.VisibleSpace - 1
-            if scrollDir == 0 and mouse[dir] < scrollThumb.AbsolutePosition[dir] then
-              self:ScrollTo(self.Index - scrollSize)
-            elseif scrollDir == 1 and mouse[dir] >= scrollThumb.AbsolutePosition[dir] + scrollThumb.AbsoluteSize[dir] then
-              self:ScrollTo(self.Index + scrollSize)
-            end
-          end
-          
-          thumbPress = false
-          thumbFramePress = true
-          doTick()
-          local thumbFrameTick = tick()
-          local releaseEvent
-          releaseEvent = user.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-              releaseEvent:Disconnect()
-              thumbFramePress = false
-            end
-          end)
-          
-          while thumbFramePress do
-            if tick() - thumbFrameTick >= 0.3 and checkMouseInGui(scrollThumbFrame) then
-              doTick()
-            end
-            task.wait()
-          end
-        end
-      end)
-      
-      newFrame.MouseWheelForward:Connect(function()
-        self:ScrollTo(self.Index - self.WheelIncrement)
-      end)
-      
-      newFrame.MouseWheelBackward:Connect(function()
-        self:ScrollTo(self.Index + self.WheelIncrement)
-      end)
+			local scrollThumb = createSimple("Frame", {
+				BackgroundColor3 = Color3.new(120/255, 120/255, 120/255),
+				BorderSizePixel = 0,
+				Parent = scrollThumbFrame
+			})
+			
+			local markerFrame = createSimple("Frame", {
+				BackgroundTransparency = 1,
+				Name = "Markers",
+				Size = UDim2.new(1, 0, 1, 0),
+				Parent = scrollThumbFrame
+			})
+			
+			local buttonPress = false
+			local thumbPress = false
+			local thumbFramePress = false
+			
+			local function handleButtonPress(button, scrollDirection)
+				if self:CanScroll(scrollDirection) then
+					button.BackgroundTransparency = 0.5
+					self:ScrollToDirection(scrollDirection)
+					self.Scrolled:Fire()
+					local buttonTick = tick()
+					local releaseEvent
+					releaseEvent = user.InputEnded:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+							releaseEvent:Disconnect()
+							button.BackgroundTransparency = checkMouseInGui(button) and 0.8 or 1
+							buttonPress = false
+						end
+					end)
+					while buttonPress do
+						if tick() - buttonTick >= 0.25 and self:CanScroll(scrollDirection) then
+							self:ScrollToDirection(scrollDirection)
+							self.Scrolled:Fire()
+						end
+						task.wait()
+					end
+				end
+			end
+			
+			button1.MouseButton1Down:Connect(function(input)
+				buttonPress = true
+				handleButtonPress(button1, "Up")
+			end)
+			
+			button1.InputEnded:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					button1.BackgroundTransparency = 1
+				end
+			end)
+			
+			button2.MouseButton1Down:Connect(function(input)
+				buttonPress = true
+				handleButtonPress(button2, "Down")
+			end)
+			
+			button2.InputEnded:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					button2.BackgroundTransparency = 1
+				end
+			end)
+			
+			scrollThumb.InputBegan:Connect(function(input)
+				if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+					local dir = self.Horizontal and "X" or "Y"
+					local lastThumbPos = nil
+					thumbPress = true
+					scrollThumb.BackgroundTransparency = 0
+					local mouseOffset = mouse[dir] - scrollThumb.AbsolutePosition[dir]
+					local releaseEvent
+					local mouseEvent
+					
+					releaseEvent = user.InputEnded:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+							releaseEvent:Disconnect()
+							if mouseEvent then mouseEvent:Disconnect() end
+							scrollThumb.BackgroundTransparency = 0.2
+							thumbPress = false
+						end
+					end)
+					
+					mouseEvent = user.InputChanged:Connect(function(input)
+						if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and thumbPress then
+							local thumbFrameSize = scrollThumbFrame.AbsoluteSize[dir] - scrollThumb.AbsoluteSize[dir]
+							local pos = mouse[dir] - scrollThumbFrame.AbsolutePosition[dir] - mouseOffset
+							if pos > thumbFrameSize then pos = thumbFrameSize
+							elseif pos < 0 then pos = 0 end
+							if lastThumbPos ~= pos then
+								lastThumbPos = pos
+								self:ScrollTo(math.floor(0.5 + pos / thumbFrameSize * (self.TotalSpace - self.VisibleSpace)))
+							end
+						end
+					end)
+				end
+			end)
+			
+			scrollThumb.InputEnded:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+					scrollThumb.BackgroundTransparency = 0
+				end
+			end)
+			
+			scrollThumbFrame.InputBegan:Connect(function(input)
+				if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not checkMouseInGui(scrollThumb) then
+					local dir = self.Horizontal and "X" or "Y"
+					local scrollDir = (mouse[dir] >= scrollThumb.AbsolutePosition[dir] + scrollThumb.AbsoluteSize[dir]) and 1 or 0
+					local function doTick()
+						local scrollSize = self.VisibleSpace - 1
+						if scrollDir == 0 and mouse[dir] < scrollThumb.AbsolutePosition[dir] then
+							self:ScrollTo(self.Index - scrollSize)
+						elseif scrollDir == 1 and mouse[dir] >= scrollThumb.AbsolutePosition[dir] + scrollThumb.AbsoluteSize[dir] then
+							self:ScrollTo(self.Index + scrollSize)
+						end
+					end
+					
+					thumbPress = false
+					thumbFramePress = true
+					doTick()
+					local thumbFrameTick = tick()
+					local releaseEvent
+					releaseEvent = user.InputEnded:Connect(function(input)
+						if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+							releaseEvent:Disconnect()
+							thumbFramePress = false
+						end
+					end)
+					
+					while thumbFramePress do
+						if tick() - thumbFrameTick >= 0.3 and checkMouseInGui(scrollThumbFrame) then
+							doTick()
+						end
+						task.wait()
+					end
+				end
+			end)
+			
+			newFrame.MouseWheelForward:Connect(function()
+				self:ScrollTo(self.Index - self.WheelIncrement)
+			end)
+			
+			newFrame.MouseWheelBackward:Connect(function()
+				self:ScrollTo(self.Index + self.WheelIncrement)
+			end)
 			
 			self.GuiElems.ScrollThumb = scrollThumb
 			self.GuiElems.ScrollThumbFrame = scrollThumbFrame
@@ -5835,13 +5652,13 @@ local function main()
 			self.Index = self.Index - self.Increment
 			self:Update()
 		end
-    funcs.CanScroll = function(self, direction)
-      if direction == "Up" then
-        return self:CanScrollUp()
-      elseif direction == "Down" then
-        return self:CanScrollDown()
-      end
-      return false
+		funcs.CanScroll = function(self, direction)
+			if direction == "Up" then
+				return self:CanScrollUp()
+			elseif direction == "Down" then
+				return self:CanScrollDown()
+			end
+			return false
 		end
 		funcs.ScrollDown = function(self)
 			self.Index = self.Index + self.Increment
@@ -5861,13 +5678,13 @@ local function main()
 			self:Update()
 		end
 		funcs.ScrollToDirection = function(self, Direaction)
-      if Direaction == "Up" then
-        self:ScrollUp()
-      elseif Direaction == "Down" then
-        self:ScrollDown()
-      end
-    end
-    
+			if Direaction == "Up" then
+				self:ScrollUp()
+			elseif Direaction == "Down" then
+				self:ScrollDown()
+			end
+		end
+		
 		funcs.Texture = function(self,data)
 			self.ThumbColor = data.ThumbColor or Color3.new(0,0,0)
 			self.ThumbSelectColor = data.ThumbSelectColor or Color3.new(0,0,0)
@@ -6098,12 +5915,12 @@ local function main()
 			self.GuiElems.Minimize = guiTopBar.Minimize
 			self.GuiElems.ResizeControls = guiResizeControls
 			self.ContentPane = guiMain.Content
-      
-      local ButtonDown = false
-      guiTopBar.MouseButton1Down:Connect(function() ButtonDown = true end)
-      guiTopBar.MouseButton1Up:Connect(function() ButtonDown = false end)
 			
-      guiTopBar.InputBegan:Connect(function(input)
+			local ButtonDown = false
+			guiTopBar.MouseButton1Down:Connect(function() ButtonDown = true end)
+			guiTopBar.MouseButton1Up:Connect(function() ButtonDown = false end)
+			
+			guiTopBar.InputBegan:Connect(function(input)
 				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
 					if self.Draggable then
 						local releaseEvent, mouseEvent
@@ -7070,7 +6887,7 @@ local function main()
 						newEntry.EntryName.TextColor3 = Color3.new(150/255,150/255,150/255)
 						newEntry.Shortcut.TextColor3 = Color3.new(150/255,150/255,150/255)
 					end
-          
+					
 					if self.Iconless then
 						newEntry.EntryName.Position = UDim2.new(0,2,0,0)
 						newEntry.EntryName.Size = UDim2.new(1,-4,0,20)
@@ -7088,7 +6905,7 @@ local function main()
 							newEntry.Icon.Image = iconIndex
 						end
 					end
-          
+					
 					if not item.Disabled then
 						if item.OnClick then
 							newEntry.MouseButton1Click:Connect(function()
@@ -7098,7 +6915,7 @@ local function main()
 								end
 							end)
 						end
-            
+						
 						if item.OnRightClick then
 							newEntry.MouseButton2Click:Connect(function()
 								item.OnRightClick(item.Name)
@@ -7120,7 +6937,7 @@ local function main()
 							newEntry.BackgroundTransparency = 1
 						end
 					end)
-				  
+					
 					newEntry.Visible = true
 					map[item] = newEntry
 					newEntry.Parent = contextList
@@ -7161,7 +6978,7 @@ local function main()
 				elems.List.CanvasSize = UDim2.new(0,0,0,toSize-6)
 				toSize = self.MaxHeight
 			else
-			  elems.List.CanvasSize = UDim2.new(0,0,0,0)
+				elems.List.CanvasSize = UDim2.new(0,0,0,0)
 			end
 			if y + toSize > maxY then reverseY = true end
 			
@@ -7516,7 +7333,7 @@ local function main()
 						end
 					end)
 			
-					scrollEvent = cloneref(game:GetService("RunService")).RenderStepped:Connect(function()
+					scrollEvent = service.RunService.RenderStepped:Connect(function()
 						if scrollPowerV ~= 0 or scrollPowerH ~= 0 then
 							obj:ScrollDelta(scrollPowerH, scrollPowerV)
 							updateSelection()
@@ -7987,7 +7804,7 @@ local function main()
 
 		funcs.PreHighlight = function(self)
 			local start = tick()
-			local text = self.Text:gsub("\\\\","  ")
+			local text = self.Text:gsub("\\\\","	")
 			--print("BACKSLASH SUB",tick()-start)
 			local textLen = #text
 			local found = {}
@@ -8604,19 +8421,19 @@ local function main()
 			}
 			
 			checkbox.Activated:Connect(function()
-			  if Lib.CheckMouseInGui(checkbox) then
-			    if self.Style == 0 then
-			      ripple(ripples_container, self.Disabled and self.Colors.Disabled or self.Colors.Primary)
-			    end
-			    
-			    if not self.Disabled then
-			      self:SetState(not self.Toggled,true)
-			    else
-			      self:Paint()
-			    end
-			    
-			    self.OnInput:Fire()
-			  end
+				if Lib.CheckMouseInGui(checkbox) then
+					if self.Style == 0 then
+						ripple(ripples_container, self.Disabled and self.Colors.Disabled or self.Colors.Primary)
+					end
+					
+					if not self.Disabled then
+						self:SetState(not self.Toggled,true)
+					else
+						self:Paint()
+					end
+					
+					self.OnInput:Fire()
+				end
 			end)
 			
 			-- Old:
@@ -8812,36 +8629,36 @@ local function main()
 			Color3.fromRGB(248,248,248)
 		}
 
-    local function isMouseInHexagon(hex, touchPos)
-      local relativeX = touchPos.X - hex.AbsolutePosition.X
-      local relativeY = touchPos.Y - hex.AbsolutePosition.Y
-      if relativeX >= hexStartX and relativeX < hexStartX + hexSizeX then
-        relativeX = relativeX - 4
-        local relativeWidth = (13 - math.min(relativeX, 26 - relativeX)) / 13
-        if relativeY >= hexTriangleStart + hexTriangleSize * relativeWidth and relativeY < hex.AbsoluteSize.Y - hexTriangleStart - hexTriangleSize * relativeWidth then
-          return true
-        end
-      end
-      return false
-    end
-    
-    local function hexInput(self, hex, color)
-      hex.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-          if isMouseInHexagon(hex, input.Position) then
-            self.OnSelect:Fire(color)
-            self:Close()
-          end
-        end
-      end)
-      
-      hex.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-          if isMouseInHexagon(hex, input.Position) then
-            self.OnPreview:Fire(color)
-          end
-        end
-      end)
+		local function isMouseInHexagon(hex, touchPos)
+			local relativeX = touchPos.X - hex.AbsolutePosition.X
+			local relativeY = touchPos.Y - hex.AbsolutePosition.Y
+			if relativeX >= hexStartX and relativeX < hexStartX + hexSizeX then
+				relativeX = relativeX - 4
+				local relativeWidth = (13 - math.min(relativeX, 26 - relativeX)) / 13
+				if relativeY >= hexTriangleStart + hexTriangleSize * relativeWidth and relativeY < hex.AbsoluteSize.Y - hexTriangleStart - hexTriangleSize * relativeWidth then
+					return true
+				end
+			end
+			return false
+		end
+		
+		local function hexInput(self, hex, color)
+			hex.InputBegan:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					if isMouseInHexagon(hex, input.Position) then
+						self.OnSelect:Fire(color)
+						self:Close()
+					end
+				end
+			end)
+			
+			hex.InputChanged:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+					if isMouseInHexagon(hex, input.Position) then
+						self.OnPreview:Fire(color)
+					end
+				end
+			end)
 		end
 		
 		local function createGui(self)
@@ -8909,15 +8726,15 @@ local function main()
 			local closable = false
 			if self.CloseEvent then self.CloseEvent:Disconnect() end
 			
-      self.CloseEvent = service.UserInputService.InputBegan:Connect(function(input)
-        if not closable or (input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch) then
-          return
-        end
-        
-        if not Lib.CheckMouseInGui(self.Gui.Frame) then
-          self.CloseEvent:Disconnect()
-          self:Close()
-        end
+			self.CloseEvent = service.UserInputService.InputBegan:Connect(function(input)
+				if not closable or (input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch) then
+					return
+				end
+				
+				if not Lib.CheckMouseInGui(self.Gui.Frame) then
+					self.CloseEvent:Disconnect()
+					self:Close()
+				end
 			end)
 			
 
@@ -9104,8 +8921,8 @@ local function main()
 			local greenInput = pickerFrame.Green.Input
 			local blueInput = pickerFrame.Blue.Input
 
-			local user = cloneref(game:GetService("UserInputService"))
-			local mouse = cloneref(game:GetService("Players")).LocalPlayer:GetMouse()
+			local user = service.UserInputService
+			local mouse = service.Players.LocalPlayer:GetMouse()
 
 			local hue,sat,val = 0,0,1
 			local red,green,blue = 1,1,1
@@ -9113,142 +8930,142 @@ local function main()
 
 			local basicColors = {Color3.new(0,0,0),Color3.new(0.66666668653488,0,0),Color3.new(0,0.33333334326744,0),Color3.new(0.66666668653488,0.33333334326744,0),Color3.new(0,0.66666668653488,0),Color3.new(0.66666668653488,0.66666668653488,0),Color3.new(0,1,0),Color3.new(0.66666668653488,1,0),Color3.new(0,0,0.49803924560547),Color3.new(0.66666668653488,0,0.49803924560547),Color3.new(0,0.33333334326744,0.49803924560547),Color3.new(0.66666668653488,0.33333334326744,0.49803924560547),Color3.new(0,0.66666668653488,0.49803924560547),Color3.new(0.66666668653488,0.66666668653488,0.49803924560547),Color3.new(0,1,0.49803924560547),Color3.new(0.66666668653488,1,0.49803924560547),Color3.new(0,0,1),Color3.new(0.66666668653488,0,1),Color3.new(0,0.33333334326744,1),Color3.new(0.66666668653488,0.33333334326744,1),Color3.new(0,0.66666668653488,1),Color3.new(0.66666668653488,0.66666668653488,1),Color3.new(0,1,1),Color3.new(0.66666668653488,1,1),Color3.new(0.33333334326744,0,0),Color3.new(1,0,0),Color3.new(0.33333334326744,0.33333334326744,0),Color3.new(1,0.33333334326744,0),Color3.new(0.33333334326744,0.66666668653488,0),Color3.new(1,0.66666668653488,0),Color3.new(0.33333334326744,1,0),Color3.new(1,1,0),Color3.new(0.33333334326744,0,0.49803924560547),Color3.new(1,0,0.49803924560547),Color3.new(0.33333334326744,0.33333334326744,0.49803924560547),Color3.new(1,0.33333334326744,0.49803924560547),Color3.new(0.33333334326744,0.66666668653488,0.49803924560547),Color3.new(1,0.66666668653488,0.49803924560547),Color3.new(0.33333334326744,1,0.49803924560547),Color3.new(1,1,0.49803924560547),Color3.new(0.33333334326744,0,1),Color3.new(1,0,1),Color3.new(0.33333334326744,0.33333334326744,1),Color3.new(1,0.33333334326744,1),Color3.new(0.33333334326744,0.66666668653488,1),Color3.new(1,0.66666668653488,1),Color3.new(0.33333334326744,1,1),Color3.new(1,1,1)}
 			local customColors = {}
-      
-      local function updateColor(noupdate)
-        local relativeX, relativeY, relativeStripY = 219 - hue * 219, 199 - sat * 199, 199 - val * 199
-        local hsvColor = Color3.fromHSV(hue, sat, val)
-        
-        if noupdate == 2 or not noupdate then
-          hueInput.Text = tostring(math.ceil(359 * hue))
-          satInput.Text = tostring(math.ceil(255 * sat))
-          valInput.Text = tostring(math.floor(255 * val))
-        end
-        if noupdate == 1 or not noupdate then
-          redInput.Text = tostring(math.floor(255 * red))
-          greenInput.Text = tostring(math.floor(255 * green))
-          blueInput.Text = tostring(math.floor(255 * blue))
-        end
-        
-        chosenColor = Color3.new(red, green, blue)
-        colorScope.Position = UDim2.new(0, (relativeX - 9), 0, (relativeY - 9))
-        colorStrip.ImageColor3 = Color3.fromHSV(hue, sat, 1)
-        colorArrow.Position = UDim2.new(0, -2, 0, (relativeStripY - 4))
-        previewFrame.BackgroundColor3 = chosenColor
-        
-        newMt.Color = chosenColor
-        newMt.OnPreview:Fire(chosenColor)
-      end
-      
-      local function handleInputBegan(input, updateFunc)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-          while user:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
-            updateFunc()task.wait()
-          end
-        end
-      end
-      
-      local function colorSpaceInput()
-        local relativeX = mouse.X - colorSpace.AbsolutePosition.X
-        local relativeY = mouse.Y - colorSpace.AbsolutePosition.Y
-        
-        if relativeX < 0 then relativeX = 0 elseif relativeX > 219 then relativeX = 219 end
-        if relativeY < 0 then relativeY = 0 elseif relativeY > 199 then relativeY = 199 end
-        
-        hue = (219 - relativeX) / 219
-        sat = (199 - relativeY) / 199
-        
-        local hsvColor = Color3.fromHSV(hue, sat, val)
-        red, green, blue = hsvColor.R, hsvColor.G, hsvColor.B
+			
+			local function updateColor(noupdate)
+				local relativeX, relativeY, relativeStripY = 219 - hue * 219, 199 - sat * 199, 199 - val * 199
+				local hsvColor = Color3.fromHSV(hue, sat, val)
+				
+				if noupdate == 2 or not noupdate then
+					hueInput.Text = tostring(math.ceil(359 * hue))
+					satInput.Text = tostring(math.ceil(255 * sat))
+					valInput.Text = tostring(math.floor(255 * val))
+				end
+				if noupdate == 1 or not noupdate then
+					redInput.Text = tostring(math.floor(255 * red))
+					greenInput.Text = tostring(math.floor(255 * green))
+					blueInput.Text = tostring(math.floor(255 * blue))
+				end
+				
+				chosenColor = Color3.new(red, green, blue)
+				colorScope.Position = UDim2.new(0, (relativeX - 9), 0, (relativeY - 9))
+				colorStrip.ImageColor3 = Color3.fromHSV(hue, sat, 1)
+				colorArrow.Position = UDim2.new(0, -2, 0, (relativeStripY - 4))
+				previewFrame.BackgroundColor3 = chosenColor
+				
+				newMt.Color = chosenColor
+				newMt.OnPreview:Fire(chosenColor)
+			end
+			
+			local function handleInputBegan(input, updateFunc)
+				if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+					while user:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) do
+						updateFunc()task.wait()
+					end
+				end
+			end
+			
+			local function colorSpaceInput()
+				local relativeX = mouse.X - colorSpace.AbsolutePosition.X
+				local relativeY = mouse.Y - colorSpace.AbsolutePosition.Y
+				
+				if relativeX < 0 then relativeX = 0 elseif relativeX > 219 then relativeX = 219 end
+				if relativeY < 0 then relativeY = 0 elseif relativeY > 199 then relativeY = 199 end
+				
+				hue = (219 - relativeX) / 219
+				sat = (199 - relativeY) / 199
+				
+				local hsvColor = Color3.fromHSV(hue, sat, val)
+				red, green, blue = hsvColor.R, hsvColor.G, hsvColor.B
 				updateColor()
-      end
-      
-      local function colorStripInput()
-        local relativeY = mouse.Y - colorStrip.AbsolutePosition.Y
-        
-        if relativeY < 0 then relativeY = 0 elseif relativeY > 199 then relativeY = 199 end	
-        
-        val = (199 - relativeY) / 199
-        
-        local hsvColor = Color3.fromHSV(hue, sat, val)
-        red, green, blue = hsvColor.R, hsvColor.G, hsvColor.B
+			end
+			
+			local function colorStripInput()
+				local relativeY = mouse.Y - colorStrip.AbsolutePosition.Y
+				
+				if relativeY < 0 then relativeY = 0 elseif relativeY > 199 then relativeY = 199 end	
+				
+				val = (199 - relativeY) / 199
+				
+				local hsvColor = Color3.fromHSV(hue, sat, val)
+				red, green, blue = hsvColor.R, hsvColor.G, hsvColor.B
 				updateColor()
-      end
-      
-      colorSpace.InputBegan:Connect(function(input) handleInputBegan(input, colorSpaceInput) end)
-      colorStrip.InputBegan:Connect(function(input) handleInputBegan(input, colorStripInput) end)
-      
-      local function hookButtons(frame, func)
-        frame.ArrowFrame.Up.InputBegan:Connect(function(input)
-          if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            local releaseEvent, runEvent
-            local startTime = tick()
-            local pressing = true
-            local startNum = tonumber(frame.Text)
-            
-            if not startNum then return end
-            
-            releaseEvent = user.InputEnded:Connect(function(endInput)
-              if endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
-                releaseEvent:Disconnect()
-                pressing = false
-              end
-            end)
-            
-            startNum = startNum + 1
-            func(startNum)
-            while pressing do
-              if tick() - startTime > 0.3 then
-                startNum = startNum + 1
-                func(startNum)
-                startTime = tick()
-              end
-              task.wait(0.1)
-            end
-          end
-        end)
-        
-        frame.ArrowFrame.Down.InputBegan:Connect(function(input)
-          if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            local releaseEvent, runEvent
-            local startTime = tick()
-            local pressing = true
-            local startNum = tonumber(frame.Text)
-            
-            if not startNum then return end
-            
-            releaseEvent = user.InputEnded:Connect(function(endInput)
-              if endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
-                releaseEvent:Disconnect()
-                pressing = false
-              end
-            end)
-            
-            startNum = startNum - 1
-            func(startNum)
-            while pressing do
-              if tick() - startTime > 0.3 then
-                startNum = startNum - 1
-                func(startNum)
-                startTime = tick()
-              end
-              task.wait(0.1)
-            end
-          end
-        end)
-      end
-      
-      --[[local function UpdateBox(TextBox, Value, IsHSV, ...)
-        local number = tonumber(TextBox.Text)
-        if number then
-          number = math.clamp(math.floor(number), 0, Value) / Value
-          local HSV = Color3.fromHSV(func(number))
-          red, green, blue = HSV.R, HSV.G, HSV.B
-          
-          TextBox.Text = tostring(number):sub(4)
-          updateColor(IsHSV)
-        end
-      end]]
-      
+			end
+			
+			colorSpace.InputBegan:Connect(function(input) handleInputBegan(input, colorSpaceInput) end)
+			colorStrip.InputBegan:Connect(function(input) handleInputBegan(input, colorStripInput) end)
+			
+			local function hookButtons(frame, func)
+				frame.ArrowFrame.Up.InputBegan:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+						local releaseEvent, runEvent
+						local startTime = tick()
+						local pressing = true
+						local startNum = tonumber(frame.Text)
+						
+						if not startNum then return end
+						
+						releaseEvent = user.InputEnded:Connect(function(endInput)
+							if endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
+								releaseEvent:Disconnect()
+								pressing = false
+							end
+						end)
+						
+						startNum = startNum + 1
+						func(startNum)
+						while pressing do
+							if tick() - startTime > 0.3 then
+								startNum = startNum + 1
+								func(startNum)
+								startTime = tick()
+							end
+							task.wait(0.1)
+						end
+					end
+				end)
+				
+				frame.ArrowFrame.Down.InputBegan:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+						local releaseEvent, runEvent
+						local startTime = tick()
+						local pressing = true
+						local startNum = tonumber(frame.Text)
+						
+						if not startNum then return end
+						
+						releaseEvent = user.InputEnded:Connect(function(endInput)
+							if endInput.UserInputType == Enum.UserInputType.MouseButton1 or endInput.UserInputType == Enum.UserInputType.Touch then
+								releaseEvent:Disconnect()
+								pressing = false
+							end
+						end)
+						
+						startNum = startNum - 1
+						func(startNum)
+						while pressing do
+							if tick() - startTime > 0.3 then
+								startNum = startNum - 1
+								func(startNum)
+								startTime = tick()
+							end
+							task.wait(0.1)
+						end
+					end
+				end)
+			end
+			
+			--[[local function UpdateBox(TextBox, Value, IsHSV, ...)
+				local number = tonumber(TextBox.Text)
+				if number then
+					number = math.clamp(math.floor(number), 0, Value) / Value
+					local HSV = Color3.fromHSV(func(number))
+					red, green, blue = HSV.R, HSV.G, HSV.B
+					
+					TextBox.Text = tostring(number):sub(4)
+					updateColor(IsHSV)
+				end
+			end]]
+			
 			local function updateHue(str)
 				local num = tonumber(str)
 				if num then
@@ -9257,10 +9074,10 @@ local function main()
 					red,green,blue = hsvColor.r,hsvColor.g,hsvColor.b
 					
 					hueInput.Text = tostring(hue*359)
-          updateColor(1)
-        end
+					updateColor(1)
+				end
 			end
-      hueInput.FocusLost:Connect(function() updateHue(hueInput.Text) end) hookButtons(hueInput, hueInput)
+			hueInput.FocusLost:Connect(function() updateHue(hueInput.Text) end) hookButtons(hueInput, hueInput)
 			
 			local function updateSat(str)
 				local num = tonumber(str)
@@ -9456,8 +9273,8 @@ local function main()
 			local currentPoint = nil
 			local resetSequence = nil
 
-			local user = cloneref(game:GetService("UserInputService"))
-			local mouse = cloneref(game:GetService("Players")).LocalPlayer:GetMouse()
+			local user = service.UserInputService
+			local mouse = service.Players.LocalPlayer:GetMouse()
 
 			for i = 2,10 do
 				local newLine = Instance.new("Frame")
@@ -9556,67 +9373,67 @@ local function main()
 				end
 			end
 
-      envelopeDragTop.InputBegan:Connect(function(input)
-        if (input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch) or not currentPoint or Lib.CheckMouseInGui(currentPoint[4].Select) then return end
-        
-        local mouseEvent, releaseEvent
-        local maxSize = numberLine.AbsoluteSize.Y
-        local mouseDelta = math.abs(envelopeDragTop.AbsolutePosition.Y - mouse.Y)
-        
-        envelopeDragTop.Line.Position = UDim2.new(0, 2, 0, 0)
-        envelopeDragTop.Line.Size = UDim2.new(0, 3, 0, 20)
-        
-        releaseEvent = user.InputEnded:Connect(function(input)
-          if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
-          mouseEvent:Disconnect()
-          releaseEvent:Disconnect()
-          envelopeDragTop.Line.Position = UDim2.new(0, 3, 0, 0)
-          envelopeDragTop.Line.Size = UDim2.new(0, 1, 0, 20)
-        end)
-        
-        mouseEvent = user.InputChanged:Connect(function(input)
-          if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            local topDiff = (currentPoint[4].AbsolutePosition.Y + 2) - (mouse.Y - mouseDelta) - 19
-            local newEnvelope = 10 * (math.max(topDiff, 0) / maxSize)
-            local maxEnvelope = math.min(currentPoint[1], 10 - currentPoint[1])
-            currentPoint[3] = math.min(newEnvelope, maxEnvelope)
-            newMt:Redraw()
-            buildSequence()
-            updateInputs(currentPoint)
-          end
-        end)
-      end)
-      
-      envelopeDragBottom.InputBegan:Connect(function(input)
-        if (input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch) or not currentPoint or Lib.CheckMouseInGui(currentPoint[4].Select) then return end
-        
-        local mouseEvent, releaseEvent
-        local maxSize = numberLine.AbsoluteSize.Y
-        local mouseDelta = math.abs(envelopeDragBottom.AbsolutePosition.Y - mouse.Y)
-        
-        envelopeDragBottom.Line.Position = UDim2.new(0, 2, 0, 0)
-        envelopeDragBottom.Line.Size = UDim2.new(0, 3, 0, 20)
-        
-        releaseEvent = user.InputEnded:Connect(function(input)
-          if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
-          mouseEvent:Disconnect()
-          releaseEvent:Disconnect()
-          envelopeDragBottom.Line.Position = UDim2.new(0, 3, 0, 0)
-          envelopeDragBottom.Line.Size = UDim2.new(0, 1, 0, 20)
-        end)
-        
-        mouseEvent = user.InputChanged:Connect(function(input)
-          if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            local bottomDiff = (mouse.Y + (20 - mouseDelta)) - (currentPoint[4].AbsolutePosition.Y + 2) - 19
-            local newEnvelope = 10 * (math.max(bottomDiff, 0) / maxSize)
-            local maxEnvelope = math.min(currentPoint[1], 10 - currentPoint[1])
-            currentPoint[3] = math.min(newEnvelope, maxEnvelope)
-            newMt:Redraw()
-            buildSequence()
-            updateInputs(currentPoint)
-          end
-        end)
-      end)
+			envelopeDragTop.InputBegan:Connect(function(input)
+				if (input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch) or not currentPoint or Lib.CheckMouseInGui(currentPoint[4].Select) then return end
+				
+				local mouseEvent, releaseEvent
+				local maxSize = numberLine.AbsoluteSize.Y
+				local mouseDelta = math.abs(envelopeDragTop.AbsolutePosition.Y - mouse.Y)
+				
+				envelopeDragTop.Line.Position = UDim2.new(0, 2, 0, 0)
+				envelopeDragTop.Line.Size = UDim2.new(0, 3, 0, 20)
+				
+				releaseEvent = user.InputEnded:Connect(function(input)
+					if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+					mouseEvent:Disconnect()
+					releaseEvent:Disconnect()
+					envelopeDragTop.Line.Position = UDim2.new(0, 3, 0, 0)
+					envelopeDragTop.Line.Size = UDim2.new(0, 1, 0, 20)
+				end)
+				
+				mouseEvent = user.InputChanged:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+						local topDiff = (currentPoint[4].AbsolutePosition.Y + 2) - (mouse.Y - mouseDelta) - 19
+						local newEnvelope = 10 * (math.max(topDiff, 0) / maxSize)
+						local maxEnvelope = math.min(currentPoint[1], 10 - currentPoint[1])
+						currentPoint[3] = math.min(newEnvelope, maxEnvelope)
+						newMt:Redraw()
+						buildSequence()
+						updateInputs(currentPoint)
+					end
+				end)
+			end)
+			
+			envelopeDragBottom.InputBegan:Connect(function(input)
+				if (input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch) or not currentPoint or Lib.CheckMouseInGui(currentPoint[4].Select) then return end
+				
+				local mouseEvent, releaseEvent
+				local maxSize = numberLine.AbsoluteSize.Y
+				local mouseDelta = math.abs(envelopeDragBottom.AbsolutePosition.Y - mouse.Y)
+				
+				envelopeDragBottom.Line.Position = UDim2.new(0, 2, 0, 0)
+				envelopeDragBottom.Line.Size = UDim2.new(0, 3, 0, 20)
+				
+				releaseEvent = user.InputEnded:Connect(function(input)
+					if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+					mouseEvent:Disconnect()
+					releaseEvent:Disconnect()
+					envelopeDragBottom.Line.Position = UDim2.new(0, 3, 0, 0)
+					envelopeDragBottom.Line.Size = UDim2.new(0, 1, 0, 20)
+				end)
+				
+				mouseEvent = user.InputChanged:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+						local bottomDiff = (mouse.Y + (20 - mouseDelta)) - (currentPoint[4].AbsolutePosition.Y + 2) - 19
+						local newEnvelope = 10 * (math.max(bottomDiff, 0) / maxSize)
+						local maxEnvelope = math.min(currentPoint[1], 10 - currentPoint[1])
+						currentPoint[3] = math.min(newEnvelope, maxEnvelope)
+						newMt:Redraw()
+						buildSequence()
+						updateInputs(currentPoint)
+					end
+				end)
+			end)
 			
 			local function placePoint(point)
 				local newPoint = Instance.new("Frame")
@@ -9637,64 +9454,64 @@ local function main()
 				newPoint.Parent = numberLine
 
 				
-        newSelect.InputBegan:Connect(function(input)
-          if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            for i, v in pairs(points) do 
-              v[4].Select.BackgroundTransparency = 1 
-            end
-            
-            newSelect.BackgroundTransparency = 0
-            updateInputs(point)
-          end
-          
-          if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not currentlySelected then
-            currentPoint = point
-            local mouseEvent, releaseEvent
-            currentlySelected = true
-            newSelect.BackgroundColor3 = Color3.new(249/255, 191/255, 59/255)
-            
-            local oldEnvelope = point[3]
-            
-            releaseEvent = user.InputEnded:Connect(function(input)
-              if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then  return end
-              
-              mouseEvent:Disconnect()
-              releaseEvent:Disconnect()
-              currentlySelected = nil
-              newSelect.BackgroundColor3 = Color3.new(199/255, 44/255, 28/255)
-            end)
-            
-            mouseEvent = user.InputChanged:Connect(function(input)
-              if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                local maxX = numberLine.AbsoluteSize.X - 1
-                local relativeX = (input.Position.X - numberLine.AbsolutePosition.X)
-                if relativeX < 0 then relativeX = 0 end
-                if relativeX > maxX then relativeX = maxX end
-                
-                local maxY = numberLine.AbsoluteSize.Y - 1
-                local relativeY = (input.Position.Y - numberLine.AbsolutePosition.Y)
-                if relativeY < 0 then relativeY = 0 end
-                if relativeY > maxY then relativeY = maxY end
-                
-                if point ~= beginPoint and point ~= endPoint then
-                  point[2] = relativeX / maxX
-                end
-                
-                point[1] = 10 - (relativeY / maxY) * 10
-                local maxEnvelope = math.min(point[1], 10 - point[1])
-                point[3] = math.min(oldEnvelope, maxEnvelope)
-                newMt:Redraw()
-                updateInputs(point)
-                
-                for i, v in pairs(points) do 
-                  v[4].Select.BackgroundTransparency = 1 
-                end
-                
-                newSelect.BackgroundTransparency = 0
-                buildSequence()
-              end
-            end)
-          end
+				newSelect.InputBegan:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+						for i, v in pairs(points) do 
+							v[4].Select.BackgroundTransparency = 1 
+						end
+						
+						newSelect.BackgroundTransparency = 0
+						updateInputs(point)
+					end
+					
+					if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not currentlySelected then
+						currentPoint = point
+						local mouseEvent, releaseEvent
+						currentlySelected = true
+						newSelect.BackgroundColor3 = Color3.new(249/255, 191/255, 59/255)
+						
+						local oldEnvelope = point[3]
+						
+						releaseEvent = user.InputEnded:Connect(function(input)
+							if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then	return end
+							
+							mouseEvent:Disconnect()
+							releaseEvent:Disconnect()
+							currentlySelected = nil
+							newSelect.BackgroundColor3 = Color3.new(199/255, 44/255, 28/255)
+						end)
+						
+						mouseEvent = user.InputChanged:Connect(function(input)
+							if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+								local maxX = numberLine.AbsoluteSize.X - 1
+								local relativeX = (input.Position.X - numberLine.AbsolutePosition.X)
+								if relativeX < 0 then relativeX = 0 end
+								if relativeX > maxX then relativeX = maxX end
+								
+								local maxY = numberLine.AbsoluteSize.Y - 1
+								local relativeY = (input.Position.Y - numberLine.AbsolutePosition.Y)
+								if relativeY < 0 then relativeY = 0 end
+								if relativeY > maxY then relativeY = maxY end
+								
+								if point ~= beginPoint and point ~= endPoint then
+									point[2] = relativeX / maxX
+								end
+								
+								point[1] = 10 - (relativeY / maxY) * 10
+								local maxEnvelope = math.min(point[1], 10 - point[1])
+								point[3] = math.min(oldEnvelope, maxEnvelope)
+								newMt:Redraw()
+								updateInputs(point)
+								
+								for i, v in pairs(points) do 
+									v[4].Select.BackgroundTransparency = 1 
+								end
+								
+								newSelect.BackgroundTransparency = 0
+								buildSequence()
+							end
+						end)
+					end
 				end)
 
 				return newPoint
@@ -9823,35 +9640,35 @@ local function main()
 				button.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then button.BackgroundTransparency = (inverse and 1 or 0) end end)
 			end
 			
-      numberLine.InputBegan:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and #points < 20 then
-          
-          if Lib.CheckMouseInGui(envelopeDragTop) or Lib.CheckMouseInGui(envelopeDragBottom) then return end
-          
-          for i, v in pairs(points) do
-            if Lib.CheckMouseInGui(v[4].Select) then
-              return
-            end
-          end
-          
-          local maxX = numberLine.AbsoluteSize.X - 1
-          local relativeX = (input.Position.X - numberLine.AbsolutePosition.X)
-          if relativeX < 0 then relativeX = 0 end
-          if relativeX > maxX then relativeX = maxX end
-          
-          local maxY = numberLine.AbsoluteSize.Y - 1
-          local relativeY = (input.Position.Y - numberLine.AbsolutePosition.Y)
-          if relativeY < 0 then relativeY = 0 end
-          if relativeY > maxY then relativeY = maxY end
-          
-          local raw = relativeX / maxX
-          local newPoint = {10 - (relativeY / maxY) * 10, raw, 0}
-          newPoint[4] = placePoint(newPoint)
-          table.insert(points, newPoint)
-          redraw()
-          buildSequence()
-        end
-      end)
+			numberLine.InputBegan:Connect(function(input)
+				if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and #points < 20 then
+					
+					if Lib.CheckMouseInGui(envelopeDragTop) or Lib.CheckMouseInGui(envelopeDragBottom) then return end
+					
+					for i, v in pairs(points) do
+						if Lib.CheckMouseInGui(v[4].Select) then
+							return
+						end
+					end
+					
+					local maxX = numberLine.AbsoluteSize.X - 1
+					local relativeX = (input.Position.X - numberLine.AbsolutePosition.X)
+					if relativeX < 0 then relativeX = 0 end
+					if relativeX > maxX then relativeX = maxX end
+					
+					local maxY = numberLine.AbsoluteSize.Y - 1
+					local relativeY = (input.Position.Y - numberLine.AbsolutePosition.Y)
+					if relativeY < 0 then relativeY = 0 end
+					if relativeY > maxY then relativeY = maxY end
+					
+					local raw = relativeX / maxX
+					local newPoint = {10 - (relativeY / maxY) * 10, raw, 0}
+					newPoint[4] = placePoint(newPoint)
+					table.insert(points, newPoint)
+					redraw()
+					buildSequence()
+				end
+			end)
 		
 			deleteButton.MouseButton1Click:Connect(function()
 				if currentPoint and currentPoint ~= beginPoint and currentPoint ~= endPoint then
@@ -9952,8 +9769,8 @@ local function main()
 			local closeButton = pickerFrame.Close
 			local topClose = pickerTopBar.Close
 
-			local user = cloneref(game:GetService("UserInputService"))
-			local mouse = cloneref(game:GetService("Players")).LocalPlayer:GetMouse()
+			local user = service.UserInputService
+			local mouse = service.Players.LocalPlayer:GetMouse()
 
 			local colors = {{Color3.new(1,0,1),0},{Color3.new(0.2,0.9,0.2),0.2},{Color3.new(0.4,0.5,0.9),0.7},{Color3.new(0.6,1,1),1}}
 			local resetSequence = nil
@@ -9999,49 +9816,49 @@ local function main()
 				newArrow.Visible = true
 				newArrow.Parent = arrowFrame
 
-        newArrow.InputBegan:Connect(function(input)
-          if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            cursor.Visible = true
-            cursor.Position = UDim2.new(0, 9 + newArrow.Position.X.Offset, 0, 0)
-          end
-          
-          if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            updateInputs(point)
-            if point == beginPoint or point == endPoint or currentlySelected then return end
-            
-            local mouseEvent, releaseEvent
-            currentlySelected = true
-            
-            releaseEvent = user.InputEnded:Connect(function(input)
-              if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
-              mouseEvent:Disconnect()
-              releaseEvent:Disconnect()
-              currentlySelected = nil
-              cursor.Visible = false
-            end)
-            
-            mouseEvent = user.InputChanged:Connect(function(input)
-              if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                local maxSize = colorLine.AbsoluteSize.X - 1
-                local relativeX = (input.Position.X - colorLine.AbsolutePosition.X)
-                if relativeX < 0 then relativeX = 0 end
-                if relativeX > maxSize then relativeX = maxSize end
-                local raw = relativeX / maxSize
-                point[2] = relativeX / maxSize
-                updateInputs(point)
-                cursor.Visible = true
-                cursor.Position = UDim2.new(0, 9 + newArrow.Position.X.Offset, 0, 0)
-                buildSequence()
-                newMt:Redraw()
-              end
-            end)
-          end
-        end)
-        
-        newArrow.InputEnded:Connect(function(input)
-          if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            cursor.Visible = false
-          end
+				newArrow.InputBegan:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+						cursor.Visible = true
+						cursor.Position = UDim2.new(0, 9 + newArrow.Position.X.Offset, 0, 0)
+					end
+					
+					if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+						updateInputs(point)
+						if point == beginPoint or point == endPoint or currentlySelected then return end
+						
+						local mouseEvent, releaseEvent
+						currentlySelected = true
+						
+						releaseEvent = user.InputEnded:Connect(function(input)
+							if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
+							mouseEvent:Disconnect()
+							releaseEvent:Disconnect()
+							currentlySelected = nil
+							cursor.Visible = false
+						end)
+						
+						mouseEvent = user.InputChanged:Connect(function(input)
+							if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+								local maxSize = colorLine.AbsoluteSize.X - 1
+								local relativeX = (input.Position.X - colorLine.AbsolutePosition.X)
+								if relativeX < 0 then relativeX = 0 end
+								if relativeX > maxSize then relativeX = maxSize end
+								local raw = relativeX / maxSize
+								point[2] = relativeX / maxSize
+								updateInputs(point)
+								cursor.Visible = true
+								cursor.Position = UDim2.new(0, 9 + newArrow.Position.X.Offset, 0, 0)
+								buildSequence()
+								newMt:Redraw()
+							end
+						end)
+					end
+				end)
+				
+				newArrow.InputEnded:Connect(function(input)
+					if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+						cursor.Visible = false
+					end
 				end)
 				
 				
@@ -10090,55 +9907,55 @@ local function main()
 				button.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then button.BackgroundTransparency = (inverse and 1 or 0) end end)
 			end
 			
-      colorLine.InputBegan:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and #colors < 20 then
-          local maxSize = colorLine.AbsoluteSize.X - 1
-          local relativeX = (input.Position.X - colorLine.AbsolutePosition.X)
-          if relativeX < 0 then relativeX = 0 end
-          if relativeX > maxSize then relativeX = maxSize end
-          
-          local raw = relativeX / maxSize
-          local fromColor = nil
-          local toColor = nil
-          for i, col in pairs(colors) do
-            if col[2] >= raw then
-              fromColor = colors[math.max(i - 1, 1)]
-              toColor = colors[i]
-              break
-            end
-          end
-          local lerpColor = fromColor[1]:lerp(toColor[1], (raw - fromColor[2]) / (toColor[2] - fromColor[2]))
-          local newPoint = {lerpColor, raw}
-          newPoint[3] = placeArrow(newPoint[2], newPoint)
-          table.insert(colors, newPoint)
-          updateInputs(newPoint)
-          buildSequence()
-          redraw()
-        end
-      end)
-      
-      colorLine.InputChanged:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-          local maxSize = colorLine.AbsoluteSize.X - 1
-          local relativeX = (input.Position.X - colorLine.AbsolutePosition.X)
-          if relativeX < 0 then relativeX = 0 end
-          if relativeX > maxSize then relativeX = maxSize end
-          cursor.Visible = true
-          cursor.Position = UDim2.new(0, 10 + relativeX, 0, 0)
-        end
-      end)
-      
-      colorLine.InputEnded:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-          local inArrow = false
-          for i, v in pairs(colors) do
-            if Lib.CheckMouseInGui(v[3]) then
-              inArrow = v[3]
-            end
-          end
-          cursor.Visible = inArrow and true or false
-          if inArrow then cursor.Position = UDim2.new(0, 9 + inArrow.Position.X.Offset, 0, 0) end
-        end
+			colorLine.InputBegan:Connect(function(input)
+				if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and #colors < 20 then
+					local maxSize = colorLine.AbsoluteSize.X - 1
+					local relativeX = (input.Position.X - colorLine.AbsolutePosition.X)
+					if relativeX < 0 then relativeX = 0 end
+					if relativeX > maxSize then relativeX = maxSize end
+					
+					local raw = relativeX / maxSize
+					local fromColor = nil
+					local toColor = nil
+					for i, col in pairs(colors) do
+						if col[2] >= raw then
+							fromColor = colors[math.max(i - 1, 1)]
+							toColor = colors[i]
+							break
+						end
+					end
+					local lerpColor = fromColor[1]:lerp(toColor[1], (raw - fromColor[2]) / (toColor[2] - fromColor[2]))
+					local newPoint = {lerpColor, raw}
+					newPoint[3] = placeArrow(newPoint[2], newPoint)
+					table.insert(colors, newPoint)
+					updateInputs(newPoint)
+					buildSequence()
+					redraw()
+				end
+			end)
+			
+			colorLine.InputChanged:Connect(function(input)
+				if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+					local maxSize = colorLine.AbsoluteSize.X - 1
+					local relativeX = (input.Position.X - colorLine.AbsolutePosition.X)
+					if relativeX < 0 then relativeX = 0 end
+					if relativeX > maxSize then relativeX = maxSize end
+					cursor.Visible = true
+					cursor.Position = UDim2.new(0, 10 + relativeX, 0, 0)
+				end
+			end)
+			
+			colorLine.InputEnded:Connect(function(input)
+				if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+					local inArrow = false
+					for i, v in pairs(colors) do
+						if Lib.CheckMouseInGui(v[3]) then
+							inArrow = v[3]
+						end
+					end
+					cursor.Visible = inArrow and true or false
+					if inArrow then cursor.Position = UDim2.new(0, 9 + inArrow.Position.X.Offset, 0, 0) end
+				end
 			end)
 			
 			timeBox:GetPropertyChangedSignal("Text"):Connect(function()
@@ -10152,28 +9969,28 @@ local function main()
 				end
 			end)
 			
-      colorBox.InputBegan:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-          local editor = newMt.ColorPicker
-          if not editor then
-            editor = Lib.ColorPicker.new()
-            editor.Window:SetTitle("ColorSequence Color Picker")
-            
-            editor.OnSelect:Connect(function(col)
-              if currentPoint then
-                currentPoint[1] = col
-              end
-              buildSequence()
-              redraw()
-            end)
-            
-            newMt.ColorPicker = editor
-          end
-          
-          editor.Window:ShowAndFocus()
-        end
+			colorBox.InputBegan:Connect(function(input)
+				if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+					local editor = newMt.ColorPicker
+					if not editor then
+						editor = Lib.ColorPicker.new()
+						editor.Window:SetTitle("ColorSequence Color Picker")
+						
+						editor.OnSelect:Connect(function(col)
+							if currentPoint then
+								currentPoint[1] = col
+							end
+							buildSequence()
+							redraw()
+						end)
+						
+						newMt.ColorPicker = editor
+					end
+					
+					editor.Window:ShowAndFocus()
+				end
 			end)
-		  
+			
 			deleteButton.MouseButton1Click:Connect(function()
 				if currentPoint and currentPoint ~= beginPoint and currentPoint ~= endPoint then
 					for i,v in pairs(colors) do
@@ -10222,8 +10039,8 @@ local function main()
 	end)()
 
 	Lib.ViewportTextBox = (function()
-		local textService = cloneref(game:GetService("TextService"))
-
+		local textService = service.TextService
+		
 		local props = {
 			OffsetX = 0,
 			TextBox = PH,
@@ -10259,17 +10076,17 @@ local function main()
 				self.TextBox.Size = UDim2.new(1,pos,1,0)
 			end
 		end
-
+		
 		funcs.GetText = function(self)
 			return self.TextBox.Text
 		end
-
+		
 		funcs.SetText = function(self,text)
 			self.TextBox.Text = text
 		end
-
+		
 		local mt = getGuiMT(props,funcs)
-
+		
 		local function convert(textbox)
 			local obj = initObj(props,mt)
 
@@ -10307,7 +10124,7 @@ local function main()
 
 			return obj
 		end
-
+		
 		local function new()
 			local textBox = Instance.new("TextBox")
 			textBox.Size = UDim2.new(0,100,0,20)
@@ -10320,7 +10137,7 @@ local function main()
 			textBox.Text = ""
 			return convert(textBox)
 		end
-
+		
 		return {new = new, convert = convert}
 	end)()
 
@@ -10481,7 +10298,7 @@ local function main()
 			local onClick = function(option) self.Selected = option self.OnSelect:Fire(option) self:Update() end
 			
 			if self.CanBeEmpty then
-        context:Add({Name = "- Select -", function() self.Selected = nil self.OnSelect:Fire(nil) self:Update() end})
+				context:Add({Name = "- Select -", function() self.Selected = nil self.OnSelect:Fire(nil) self:Update() end})
 			end
 			
 			for i = 1,#options do
@@ -10551,7 +10368,7 @@ local function main()
 		}
 		local funcs = {}
 		local tostring = tostring
-    
+		
 		local disconnect = function(con)
 			local pos = table.find(con.Signal.Connections,con)
 			if pos then table.remove(con.Signal.Connections,pos) end
@@ -10565,28 +10382,28 @@ local function main()
 					self.LastItem = item
 				end
 				
-        self.Combo = self.Combo + 1
-        self.ClickId = tick()
-        
-        task.spawn(function()
-          if self.InputDown then
-            self.InputDown = false
-          else
-            self.InputDown = tick()
-            
-            local Connection = item.MouseButton1Up:Once(function()
-              self.InputDown = false
-            end)
-            
-            while self.InputDown and not Explorer.Dragging do
-              if (tick() - self.InputDown) >= 0.4 then
-                self.InputDown = false
-                self["OnRelease"]:Fire(item, self.Combo, 2, Vector2.new(X, Y))
-                break
-              end;task.wait()
-            end
-          end
-        end)
+				self.Combo = self.Combo + 1
+				self.ClickId = tick()
+				
+				task.spawn(function()
+					if self.InputDown then
+						self.InputDown = false
+					else
+						self.InputDown = tick()
+						
+						local Connection = item.MouseButton1Up:Once(function()
+							self.InputDown = false
+						end)
+						
+						while self.InputDown and not Explorer.Dragging do
+							if (tick() - self.InputDown) >= 0.4 then
+								self.InputDown = false
+								self["OnRelease"]:Fire(item, self.Combo, 2, Vector2.new(X, Y))
+								break
+							end;task.wait()
+						end
+					end
+				end)
 				
 				local release
 				release = service.UserInputService.InputEnded:Connect(function(input)
@@ -10644,7 +10461,7 @@ end
 
 -- Main vars
 local Main, Explorer, Properties, ScriptViewer, DefaultSettings, Notebook, Serializer, Lib
-local API, RMD
+local API, RM
 
 -- Default Settings
 DefaultSettings = (function()
@@ -10725,11 +10542,7 @@ end)()
 local Settings = {}
 local Apps = {}
 local env = {}
-local service = setmetatable({},{__index = function(self,name)
-	local serv = cloneref(game:GetService(name))
-	self[name] = serv
-	return serv
-end})
+
 local plr = service.Players.LocalPlayer or service.Players.PlayerAdded:wait()
 
 local create = function(data)
@@ -10819,8 +10632,8 @@ Main = (function()
 			Apps[name] = moduleData
 			return moduleData
 		else
-			local module = script:WaitForChild("Modules"):WaitForChild(name,2)
-			if not module then Main.Error("CANNOT FIND MODULE "..name) end
+			local module = script:WaitForChild("Modules"):WaitForChild(name, 2)
+			if not module then Main.Error("CANNOT FIND MODULE " .. name) end
 			
 			local control = require(module)
 			Main.AppControls[name] = control
@@ -10836,7 +10649,7 @@ Main = (function()
 		for i,v in pairs(Main.ModuleList) do
 			local s,e = pcall(Main.LoadModule,v)
 			if not s then
-				Main.Error("FAILED LOADING " + v + " CAUSE " + e)
+				Main.Error(("FAILED LOADING %s CAUSE %s"):format(v, e))
 			end
 		end
 		
@@ -10862,72 +10675,72 @@ Main = (function()
 	end
 	
 	Main.InitEnv = function()
-        setmetatable(env, {__newindex = function(self, name, func)
-            if not func then Main.MissingEnv[#Main.MissingEnv + 1] = name return end
-            rawset(self, name, func)
-        end})
+				setmetatable(env, {__newindex = function(self, name, func)
+						if not func then Main.MissingEnv[#Main.MissingEnv + 1] = name return end
+						rawset(self, name, func)
+				end})
 
-        -- file
-        env.readfile = readfile
-        env.writefile = writefile
-        env.appendfile = appendfile
-        env.makefolder = makefolder
-        env.listfiles = listfiles
-        env.loadfile = loadfile
-        env.movefileas = movefileas
-        env.saveinstance = saveinstance
+				-- file
+				env.readfile = readfile
+				env.writefile = writefile
+				env.appendfile = appendfile
+				env.makefolder = makefolder
+				env.listfiles = listfiles
+				env.loadfile = loadfile
+				env.movefileas = movefileas
+				env.saveinstance = saveinstance
 
-        -- debug
-        env.getupvalues = (debug and debug.getupvalues) or getupvalues or getupvals
-        env.getconstants = (debug and debug.getconstants) or getconstants or getconsts
-        env.getinfo = (debug and (debug.getinfo or debug.info)) or getinfo
-        env.islclosure = islclosure or is_l_closure or is_lclosure
-        env.checkcaller = checkcaller
-        --env.getreg = getreg
-        env.getgc = getgc or get_gc_objects
-        env.base64encode = crypt and crypt.base64 and crypt.base64.encode
-        env.getscriptbytecode = getscriptbytecode
+				-- debug
+				env.getupvalues = (debug and debug.getupvalues) or getupvalues or getupvals
+				env.getconstants = (debug and debug.getconstants) or getconstants or getconsts
+				env.getinfo = (debug and (debug.getinfo or debug.info)) or getinfo
+				env.islclosure = islclosure or is_l_closure or is_lclosure
+				env.checkcaller = checkcaller
+				--env.getreg = getreg
+				env.getgc = getgc or get_gc_objects
+				env.base64encode = crypt and crypt.base64 and crypt.base64.encode
+				env.getscriptbytecode = getscriptbytecode
 
-        -- other
-        --env.setfflag = setfflag
-        env.request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
-        env.decompile = decompile or (env.getscriptbytecode and env.request and env.base64encode and function(scr)
-            local s, bytecode = pcall(env.getscriptbytecode, scr)
-            if not s then
-                return "failed to get bytecode " .. tostring(bytecode)
-            end
+				-- other
+				--env.setfflag = setfflag
+				env.request = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+				env.decompile = decompile or (env.getscriptbytecode and env.request and env.base64encode and function(scr)
+						local s, bytecode = pcall(env.getscriptbytecode, scr)
+						if not s then
+								return "failed to get bytecode " .. tostring(bytecode)
+						end
 
-            local response = env.request({
-                Url = "https://unluau.lonegladiator.dev/unluau/decompile",
-                Method = "POST",
-                Headers = {
-                    ["Content-Type"] = "application/json"
-                },
-                Body = service.HttpService:JSONEncode({
-                    version = 5,
-                    bytecode = env.base64encode(bytecode)
-                })
-            })
+						local response = env.request({
+								Url = "https://unluau.lonegladiator.dev/unluau/decompile",
+								Method = "POST",
+								Headers = {
+										["Content-Type"] = "application/json"
+								},
+								Body = service.HttpService:JSONEncode({
+										version = 5,
+										bytecode = env.base64encode(bytecode)
+								})
+						})
 
-            local decoded = service.HttpService:JSONDecode(response.Body)
-            if decoded.status ~= "ok" then
-                return "decompilation failed: " .. tostring(decoded.status)
-            end
+						local decoded = service.HttpService:JSONDecode(response.Body)
+						if decoded.status ~= "ok" then
+								return "decompilation failed: " .. tostring(decoded.status)
+						end
 
-            return decoded.output
-        end)
-        env.protectgui = protect_gui or (syn and syn.protect_gui)
-        env.gethui = gethui or get_hidden_gui
-        env.setclipboard = setclipboard or toclipboard or set_clipboard or (Clipboard and Clipboard.set)
-        env.getnilinstances = getnilinstances or get_nil_instances
-        env.getloadedmodules = getloadedmodules
+						return decoded.output
+				end)
+				env.protectgui = protect_gui or (syn and syn.protect_gui)
+				env.gethui = gethui or get_hidden_gui
+				env.setclipboard = setclipboard or toclipboard or set_clipboard or (Clipboard and Clipboard.set)
+				env.getnilinstances = getnilinstances or get_nil_instances
+				env.getloadedmodules = getloadedmodules
 
-        -- if identifyexecutor and type(identifyexecutor) == "function" then Main.Executor = identifyexecutor() end
+				-- if identifyexecutor and type(identifyexecutor) == "function" then Main.Executor = identifyexecutor() end
 
-        Main.GuiHolder = Main.Elevated and service.CoreGui or plr:FindFirstChildWhichIsA("PlayerGui")
+				Main.GuiHolder = Main.Elevated and service.CoreGui or plr:FindFirstChildWhichIsA("PlayerGui")
 
-        setmetatable(env, nil)
-    end
+				setmetatable(env, nil)
+		end
 
 	Main.LoadSettings = function()
 		local s,data = pcall(env.readfile or error,"DexSettings.json")
@@ -11068,20 +10881,20 @@ Main = (function()
 			enums[enum.Name] = newEnum
 		end
 		
-    local function getMember(class,member)
-      if not classes[class] or not classes[class][member] then return end
-      local result = {}
-      
-      local currentClass = classes[class]
-      while currentClass do
-        for _,entry in pairs(currentClass[member]) do
-          result[#result+1] = entry
-        end
-        currentClass = currentClass.Superclass
-      end
-      
-      table.sort(result,function(a,b) return a.Name < b.Name end)
-      return result
+		local function getMember(class,member)
+			if not classes[class] or not classes[class][member] then return end
+			local result = {}
+			
+			local currentClass = classes[class]
+			while currentClass do
+				for _,entry in pairs(currentClass[member]) do
+					result[#result+1] = entry
+				end
+				currentClass = currentClass.Superclass
+			end
+			
+			table.sort(result,function(a,b) return a.Name < b.Name end)
+			return result
 		end
 		
 		insertAbove(categoryOrder,"Behavior","Tuning")
@@ -11226,15 +11039,15 @@ Main = (function()
 	end
 	
 	Main.ShowGui = function(gui)
-        if env.gethui then
-            gui.Parent = env.gethui()
-        elseif env.protectgui then
-            env.protectgui(gui)
-            gui.Parent = Main.GuiHolder
-        else
-            gui.Parent = Main.GuiHolder
-        end
-    end
+				if env.gethui then
+						gui.Parent = env.gethui()
+				elseif env.protectgui then
+						env.protectgui(gui)
+						gui.Parent = Main.GuiHolder
+				else
+						gui.Parent = Main.GuiHolder
+				end
+		end
 
 	Main.CreateIntro = function(initStatus) -- TODO: Must theme and show errors
 		local gui = create({
@@ -11293,7 +11106,7 @@ Main = (function()
 		
 		local ti = TweenInfo.new(0.4,Enum.EasingStyle.Quad,Enum.EasingDirection.Out)
 		tweenNumber(100,ti,function(val)
-			    val = val/200
+					val = val/200
 				local start = NumberSequenceKeypoint.new(0,0)
 				local a1 = NumberSequenceKeypoint.new(val,0)
 				local a2 = NumberSequenceKeypoint.new(math.min(0.5,val+math.min(0.05,val)),1)
@@ -11440,18 +11253,18 @@ Main = (function()
 		app.Main.Size = UDim2.new(1,0,0,math.clamp(46+ySize,60,74))
 		app.Main.AppName.Text = data.Name
 		
-    app.Main.InputBegan:Connect(function(input)
-      if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        app.Main.BackgroundTransparency = 0
-        app.Main.BackgroundColor3 = Settings.Theme.ButtonHover
-      end
-    end)
-    
-    app.Main.InputEnded:Connect(function(input)
-      if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        app.Main.BackgroundTransparency = data.Open and 0 or 1
-        app.Main.BackgroundColor3 = Settings.Theme.Button
-      end
+		app.Main.InputBegan:Connect(function(input)
+			if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+				app.Main.BackgroundTransparency = 0
+				app.Main.BackgroundColor3 = Settings.Theme.ButtonHover
+			end
+		end)
+		
+		app.Main.InputEnded:Connect(function(input)
+			if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+				app.Main.BackgroundTransparency = data.Open and 0 or 1
+				app.Main.BackgroundColor3 = Settings.Theme.Button
+			end
 		end)
 		
 		app.Main.MouseButton1Click:Connect(function()
@@ -11493,11 +11306,11 @@ Main = (function()
 				if not Main.MainGuiOpen and startTime == Main.MainGuiCloseTime then Main.MainGui.OpenButton.MainFrame.Visible = false end
 			end)()
 		else
-      Main.MainGuiMouseEvent = service.UserInputService.InputBegan:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not Lib.CheckMouseInGui(Main.MainGui.OpenButton) and not Lib.CheckMouseInGui(Main.MainGui.OpenButton.MainFrame) then
-          
-          Main.SetMainGuiOpen(false)
-        end
+			Main.MainGuiMouseEvent = service.UserInputService.InputBegan:Connect(function(input)
+				if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not Lib.CheckMouseInGui(Main.MainGui.OpenButton) and not Lib.CheckMouseInGui(Main.MainGui.OpenButton.MainFrame) then
+					
+					Main.SetMainGuiOpen(false)
+				end
 			end)
 		end
 	end
@@ -11594,7 +11407,7 @@ Main = (function()
 	end
 	
 	Main.Init = function()
-		Main.Elevated = pcall(function() local a = cloneref(game:GetService("CoreGui")):GetFullName() end)
+		Main.Elevated = pcall(function() local a = service.CoreGui:GetFullName() end)
 		Main.InitEnv()
 		Main.LoadSettings()
 		Main.SetupFilesystem()
