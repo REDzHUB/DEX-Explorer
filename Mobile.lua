@@ -56,17 +56,17 @@ local SHOW_MISC_OPERATIONS = false
 local LIST_USED_GLOBALS = true
 local RETURN_ELAPSED_TIME = false]]
 		
-		local func = loadstring(
-			string.gsub(
+		xpcall(function()
+			return loadstring(
 				string.gsub(
-					Decompile_Source, "return %(x %% 2^32%) // %(2^disp%)", "return math.floor((x %% 2^32) / (2^disp))", 1
-				), ";;CONSTANTS HERE;;", CONSTANTS
-			), "Advanced-Decompiler-V3"
-		)
+					string.gsub(
+						Decompile_Source, "return %(x %% 2^32%) // %(2^disp%)", "return math.floor((x %% 2^32) / (2^disp))", 1
+					), ";;CONSTANTS HERE;;", CONSTANTS
+				), "Advanced-Decompiler-V3"
+			)()
+		end, warn)
 		
-		if func then func() end
-		
-		local HttpService = service.HttpService
+		-- local HttpService = service.HttpService
 		
 		local _ENV = (getgenv or getrenv or getfenv)()
 		Decompile = _ENV.decompile
@@ -1689,7 +1689,24 @@ local function main()
 
 		return path
 	end
-
+	
+	Explorer.DefaultProps = {
+		["BasePart"] = {
+			Position = function(Obj)
+				local Player = service.Players.LocalPlayer
+				if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+					Obj.Position = (Player.Character.HumanoidRootPart.CFrame * CFrame.new(0, 0, -10)).p
+				end
+				return Obj.Position
+			end,
+			Anchored = true
+		},
+		["GuiObject"] = {
+			Position = function(Obj) return (Obj.Parent:IsA("ScreenGui") and UDim2.new(0.5, 0, 0.5, 0)) or Obj.Position end,
+			Active = true
+		}
+	}
+	
 	Explorer.InitInsertObject = function()
 		local context = Lib.ContextMenu.new()
 		context.SearchEnabled = true
@@ -1717,32 +1734,43 @@ local function main()
 				return a[1].Name < b[1].Name
 			end
 		end)
-
+		
+		local function defaultProps(obj)
+			for class, props in pairs(Explorer.DefaultProps) do
+				if obj:IsA(class) then
+					for prop, value in pairs(props) do
+						obj[prop] = (type(value) == "function" and value(obj)) or value
+					end
+				end
+			end
+		end
+		
 		local function onClick(className)
 			local sList = selection.List
 			local instNew = Instance.new
 			for i = 1,#sList do
 				local node = sList[i]
 				local obj = node.Obj
-				Explorer.MakeNodeVisible(node,true)
-				pcall(instNew,className,obj)
+				Explorer.MakeNodeVisible(node, true)
+				local success, obj = pcall(instNew, className, obj)
+				if success and obj then defaultProps(obj) end
 			end
 		end
-
+		
 		local lastCategory = ""
 		for i = 1,#classes do
 			local class = classes[i][1]
 			local rmdEntry = RMD.Classes[class.Name]
 			local iconInd = rmdEntry and tonumber(rmdEntry.ExplorerImageIndex) or 0
 			local category = classes[i][2]
-
+			
 			if lastCategory ~= category then
 				context:AddDivider(category)
 				lastCategory = category
 			end
 			context:Add({Name = class.Name, IconMap = Explorer.ClassIcons, Icon = iconInd, OnClick = onClick})
 		end
-
+		
 		Explorer.InsertObjectContext = context
 	end
 	
@@ -4334,26 +4362,26 @@ local function main()
 						dump = dump .. ("%s%s%s"):format(string.rep("		", indentation), tostring(str), new_line and "\n" or "")
 					end
 					function functions:get_function_name(func)
-					  local n = getinfo(func).name
-					  return n ~= "" and n or "Unknown Name"
+						local n = getinfo(func).name
+						return n ~= "" and n or "Unknown Name"
 					end
 					function functions:dump_table(input, indent, index)
-					  local indent = indent < 0 and 0 or indent
-					  functions:add_to_dump(("%s [%s] %s"):format(tostring(index), tostring(typeof(input)), tostring(input)), indent - 1)
-					  local count = 0
-					  for index, value in pairs(input) do
-					    count = count + 1
-					    if type(value) == "function" then
-					      functions:add_to_dump(("%d [function] = %s"):format(count, functions:get_function_name(value)), indent)
-					    elseif type(value) == "table" then
-					      if not data_base[value] then
-					        data_base[value] = true
-					        functions:add_to_dump(("%d [table]:"):format(count), indent)
-					        functions:dump_table(value, indent + 1, index)
-					      else
-					        functions:add_to_dump(("%d [table] (Recursive table detected)"):format(count), indent)
-					      end
-					      else
+						local indent = indent < 0 and 0 or indent
+						functions:add_to_dump(("%s [%s] %s"):format(tostring(index), tostring(typeof(input)), tostring(input)), indent - 1)
+						local count = 0
+						for index, value in pairs(input) do
+							count = count + 1
+							if type(value) == "function" then
+								functions:add_to_dump(("%d [function] = %s"):format(count, functions:get_function_name(value)), indent)
+							elseif type(value) == "table" then
+								if not data_base[value] then
+									data_base[value] = true
+									functions:add_to_dump(("%d [table]:"):format(count), indent)
+									functions:dump_table(value, indent + 1, index)
+								else
+									functions:add_to_dump(("%d [table] (Recursive table detected)"):format(count), indent)
+								end
+								else
 												functions:add_to_dump(("%d [%s] = %s"):format(count, tostring(typeof(value)), tostring(value)), indent)
 										 end
 									end
@@ -4699,7 +4727,7 @@ local function main()
 		local start = tick()
 		while tick() - start < s do signalWait(renderStepped) end
 	end
-
+	
 	Lib.ButtonAnim = function(button,data)
 		local holding = false
 		local disabled = false
